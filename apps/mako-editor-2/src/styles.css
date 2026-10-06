@@ -1,0 +1,15 @@
+/* The theme tokens (--background, --card, --brand, --canvas, --chart-1…5,
+   light and dark) are injected by @makoai/app-sdk, and the house base and kit
+   styles come from @makoai/app-sdk/ui.css (imported before this file).
+   Override a token here to re-theme; keep app layout below. */
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.muted {
+  margin: 0;
+  color: var(--muted-foreground);
+}
