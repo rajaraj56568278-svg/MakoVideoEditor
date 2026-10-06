@@ -66,7 +66,7 @@ function getMediaMetadata(url: string, type: 'video' | 'audio'): Promise<{
         width: type === 'video' ? (el as HTMLVideoElement).videoWidth : undefined,
         height: type === 'video' ? (el as HTMLVideoElement).videoHeight : undefined,
       });
-      URL.revokeObjectURL(url);
+      // Don't revoke - the URL is needed for playback
     };
     el.onerror = () => {
       resolve({ duration: 0 });

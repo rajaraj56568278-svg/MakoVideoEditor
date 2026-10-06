@@ -7,6 +7,11 @@ import EffectsPanel from './EffectsPanel';
 import TextEditor from './TextEditor';
 import AudioPanel from './AudioPanel';
 import TransitionsPanel from './TransitionsPanel';
+import SpeedPanel from './SpeedPanel';
+import CropPanel from './CropPanel';
+import ChromaKeyPanel from './ChromaKeyPanel';
+import KeyframePanel from './KeyframePanel';
+import TrimPanel from './TrimPanel';
 import ExportModal from './ExportModal';
 import { saveProject } from '../utils/db';
 import type { BottomPanel } from '../types';
@@ -125,6 +130,11 @@ export default function Editor() {
             {bottomPanel === 'stickers' && <TextEditor mode="stickers" onClose={handleClosePanel} />}
             {bottomPanel === 'audio' && <AudioPanel onClose={handleClosePanel} />}
             {bottomPanel === 'transitions' && <TransitionsPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'speed' && <SpeedPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'crop' && <CropPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'chroma' && <ChromaKeyPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'keyframe' && <KeyframePanel onClose={handleClosePanel} />}
+            {bottomPanel === 'trim' && <TrimPanel onClose={handleClosePanel} />}
           </div>
         )}
 
@@ -159,12 +169,10 @@ export default function Editor() {
                   type: 'UPDATE_PROJECT',
                   updates: { mediaLibrary: [...project.mediaLibrary, media] },
                 });
-                const trackIndex = media.type === 'audio' ? 3 : 0;
+                const trackIndex = media.type === 'audio' ? 3 : media.type === 'image' ? 1 : 0;
                 const lastEnd = project.clips
                   .filter(c => c.trackIndex === trackIndex)
                   .reduce((max, c) => Math.max(max, c.startTime + c.duration), 0);
-                const { addClip } = await import('../store/ProjectContext').then(m => ({ addClip: null }));
-                // Use dispatch directly
                 const clip = {
                   id: crypto.randomUUID(),
                   type: media.type === 'audio' ? 'audio' as const : 'video' as const,
@@ -195,6 +203,18 @@ export default function Editor() {
             };
             input.click();
           }}
+        />
+        <NavButton
+          icon={<span className="text-lg">️</span>}
+          label="Trim"
+          active={bottomPanel === 'trim'}
+          onClick={() => handleOpenPanel('trim')}
+        />
+        <NavButton
+          icon={<span className="text-lg"></span>}
+          label="Speed"
+          active={bottomPanel === 'speed'}
+          onClick={() => handleOpenPanel('speed')}
         />
         <NavButton
           icon={<span className="text-lg">T</span>}

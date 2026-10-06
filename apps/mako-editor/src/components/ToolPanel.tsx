@@ -201,11 +201,20 @@ function SelectedClipTools({ selectedClip, onOpenPanel }: { selectedClip: any; o
         Editing: <span className="text-text-primary">{selectedClip.type} clip</span>
       </p>
 
+      {/* Row 1: Core editing */}
+      <div className="grid grid-cols-4 gap-2">
+        <ToolButton icon="✂️" label="Trim" onClick={() => onOpenPanel('trim')} />
+        <ToolButton icon="" label="Speed" onClick={() => onOpenPanel('speed')} />
+        <ToolButton icon="📐" label="Crop" onClick={() => onOpenPanel('crop')} />
+        <ToolButton icon="🔄" label="Transition" onClick={() => onOpenPanel('transitions')} />
+      </div>
+
+      {/* Row 2: Visual */}
       <div className="grid grid-cols-4 gap-2">
         <ToolButton icon="✨" label="Effects" onClick={() => onOpenPanel('effects')} />
         <ToolButton icon="🎨" label="Adjust" onClick={() => onOpenPanel('adjustments')} />
-        <ToolButton icon="🔄" label="Transition" onClick={() => onOpenPanel('transitions')} />
-        <ToolButton icon="📐" label="Filters" onClick={() => onOpenPanel('filters')} />
+        <ToolButton icon="" label="Chroma" onClick={() => onOpenPanel('chroma')} />
+        <ToolButton icon="📊" label="Keyframe" onClick={() => onOpenPanel('keyframe')} />
       </div>
 
       {/* Volume slider for video/audio clips */}
@@ -218,7 +227,11 @@ function SelectedClipTools({ selectedClip, onOpenPanel }: { selectedClip: any; o
             max="1"
             step="0.05"
             value={selectedClip.volume}
-            onChange={e => {}} // Handled by context
+            onChange={e => dispatch({
+              type: 'UPDATE_CLIP',
+              clipId: selectedClip.id,
+              updates: { volume: Number(e.target.value) },
+            })}
             className="w-full"
           />
         </div>
@@ -228,11 +241,19 @@ function SelectedClipTools({ selectedClip, onOpenPanel }: { selectedClip: any; o
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <label className="text-xs text-text-secondary">Fade In: {selectedClip.fadeIn.toFixed(1)}s</label>
-          <input type="range" min="0" max="3" step="0.1" value={selectedClip.fadeIn} className="w-full" onChange={() => {}} />
+          <input type="range" min="0" max="3" step="0.1" value={selectedClip.fadeIn} className="w-full" onChange={e => dispatch({
+            type: 'UPDATE_CLIP',
+            clipId: selectedClip.id,
+            updates: { fadeIn: Number(e.target.value) },
+          })} />
         </div>
         <div className="space-y-1">
           <label className="text-xs text-text-secondary">Fade Out: {selectedClip.fadeOut.toFixed(1)}s</label>
-          <input type="range" min="0" max="3" step="0.1" value={selectedClip.fadeOut} className="w-full" onChange={() => {}} />
+          <input type="range" min="0" max="3" step="0.1" value={selectedClip.fadeOut} className="w-full" onChange={e => dispatch({
+            type: 'UPDATE_CLIP',
+            clipId: selectedClip.id,
+            updates: { fadeOut: Number(e.target.value) },
+          })} />
         </div>
       </div>
     </div>
@@ -248,6 +269,18 @@ function NoSelectionTools({ onOpenPanel }: { onOpenPanel: (p: BottomPanel) => vo
         <ToolButton icon="😀" label="Stickers" onClick={() => onOpenPanel('stickers')} />
         <ToolButton icon="🎵" label="Audio" onClick={() => onOpenPanel('audio')} />
         <ToolButton icon="✨" label="Effects" onClick={() => onOpenPanel('effects')} />
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        <ToolButton icon="" label="Crop" onClick={() => onOpenPanel('crop')} />
+        <ToolButton icon="🔄" label="Speed" onClick={() => onOpenPanel('speed')} />
+        <ToolButton icon="" label="Chroma" onClick={() => onOpenPanel('chroma')} />
+        <ToolButton icon="" label="AI Remove" onClick={() => {}} comingSoon />
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        <ToolButton icon="" label="Captions" onClick={() => {}} comingSoon />
+        <ToolButton icon="📊" label="Keyframe" onClick={() => onOpenPanel('keyframe')} />
+        <ToolButton icon="" label="Filters" onClick={() => onOpenPanel('filters')} />
+        <ToolButton icon="" label="Adjust" onClick={() => onOpenPanel('adjustments')} />
       </div>
     </div>
   );

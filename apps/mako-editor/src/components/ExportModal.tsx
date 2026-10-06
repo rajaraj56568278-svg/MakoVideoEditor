@@ -89,31 +89,9 @@ export default function ExportModal() {
       // Set up MediaRecorder
       const stream = canvas.captureStream(30);
 
-      // Add audio tracks if available
+      // Audio will be set up after the render loop starts
       const audioCtx = new AudioContext();
       const audioClips = project.clips.filter(c => c.type === 'audio' && c.mediaUrl);
-      const audioSources: AudioBufferSourceNode[] = [];
-
-      for (const clip of audioClips) {
-        if (clip.mediaUrl) {
-          try {
-            const response = await fetch(clip.mediaUrl);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-            const source = audioCtx.createBufferSource();
-            source.buffer = audioBuffer;
-            const gainNode = audioCtx.createGain();
-            gainNode.gain.value = clip.volume;
-            source.connect(gainNode);
-            const dest = audioCtx.createMediaStreamDestination();
-            gainNode.connect(dest);
-            // Add audio tracks to the stream
-            dest.stream.getAudioTracks().forEach(track => stream.addTrack(track));
-          } catch (e) {
-            console.warn('Failed to add audio:', e);
-          }
-        }
-      }
 
       const recorder = new MediaRecorder(stream, {
         mimeType: selectedMime,
@@ -134,9 +112,55 @@ export default function ExportModal() {
 
       recorder.start(100); // Collect data every 100ms
 
+      // Start audio sources
+      const audioStartTimes: number[] = [];
+      for (const clip of audioClips) {
+        const source = audioSources.find((_, i) => audioClips[i] === clip);
+        // Actually start each audio source at the right time
+      }
+      // Re-create and start audio sources properly
+      const activeAudioSources: { source: AudioBufferSourceNode; startTime: number }[] = [];
+      for (const clip of audioClips) {
+        if (clip.mediaUrl) {
+          try {
+            const response = await fetch(clip.mediaUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            const source = audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            const gainNode = audioCtx.createGain();
+            // Apply fade in/out
+            const fadeInDur = clip.fadeIn || 0;
+            const fadeOutDur = clip.fadeOut || 0;
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime + clip.startTime);
+            if (fadeInDur > 0) {
+              gainNode.gain.linearRampToValueAtTime(clip.volume, audioCtx.currentTime + clip.startTime + fadeInDur);
+            } else {
+              gainNode.gain.setValueAtTime(clip.volume, audioCtx.currentTime + clip.startTime);
+            }
+            if (fadeOutDur > 0) {
+              gainNode.gain.setValueAtTime(clip.volume, audioCtx.currentTime + clip.startTime + clip.duration - fadeOutDur);
+              gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + clip.startTime + clip.duration);
+            }
+            source.connect(gainNode);
+            const dest = audioCtx.createMediaStreamDestination();
+            gainNode.connect(dest);
+            dest.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+            activeAudioSources.push({ source, startTime: clip.startTime });
+          } catch (e) {
+            console.warn('Failed to add audio:', e);
+          }
+        }
+      }
+
       // Start audio playback
       const startTime = performance.now();
       const totalDuration = project.duration;
+
+      // Start all audio sources at the right time
+      activeAudioSources.forEach(({ source, startTime: clipStart }) => {
+        source.start(audioCtx.currentTime + clipStart);
+      });
 
       // Render loop
       const renderFrame = () => {
@@ -231,13 +255,6 @@ export default function ExportModal() {
           videoElements.forEach(v => { v.pause(); v.src = ''; });
         }
       };
-
-      // Start audio sources
-      for (const clip of audioClips) {
-        if (clip.mediaUrl) {
-          // Audio is handled via Web Audio API above
-        }
-      }
 
       requestAnimationFrame(renderFrame);
 
@@ -335,7 +352,7 @@ export default function ExportModal() {
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-text-muted">Format</span>
-                  <span className="text-text-secondary">WebM (MP4 if supported)</span>
+                  <span className="text-text-secondary">WebM / MP4</span>
                 </div>
               </div>
 
