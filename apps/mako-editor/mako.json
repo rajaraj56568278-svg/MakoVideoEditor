@@ -1,0 +1,8 @@
+{
+  "id": "6ac473eda6c4d1ce7c0a27e0",
+  "schemaVersion": 1,
+  "title": "Mako Editor",
+  "description": "Professional mobile video editor with timeline, effects, text overlays, audio, and FFmpeg-based export",
+  "entry": "src/main.tsx",
+  "bindings": []
+}
