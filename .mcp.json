@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mako": {
+      "type": "http",
+      "url": "${MAKO_API_URL:-https://app.mako.ai}/api/mcp"
+    }
+  }
+}
