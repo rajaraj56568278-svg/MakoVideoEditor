@@ -34,6 +34,88 @@ export interface VideoEffects {
   temperature: number;   // -100 to 100, default 0
 }
 
+// ─── FX Effects System ────────────────────────────────────────
+
+export type FxType =
+  | 'blur'
+  | 'motionBlur'
+  | 'glitch'
+  | 'shake'
+  | 'rgbSplit'
+  | 'flash'
+  | 'zoom'
+  | 'spin'
+  | 'distortion'
+  | 'vhs'
+  | 'noise'
+  | 'glow'
+  | 'vignette'
+  | 'film'
+  | 'pixelate'
+  | 'mirror'
+  | 'chromaticAberration';
+
+export interface FxInstance {
+  id: string;
+  type: FxType;
+  intensity: number;   // 0-100
+  duration: number;    // seconds, 0 = entire clip
+  startTime: number;   // offset within clip
+  enabled: boolean;
+}
+
+export const FX_DEFINITIONS: { type: FxType; label: string; icon: string; defaultIntensity: number }[] = [
+  { type: 'blur', label: 'Blur', icon: '💨', defaultIntensity: 50 },
+  { type: 'motionBlur', label: 'Motion Blur', icon: '🌊', defaultIntensity: 50 },
+  { type: 'glitch', label: 'Glitch', icon: '⚡', defaultIntensity: 40 },
+  { type: 'shake', label: 'Shake', icon: '📳', defaultIntensity: 30 },
+  { type: 'rgbSplit', label: 'RGB Split', icon: '🔴', defaultIntensity: 40 },
+  { type: 'flash', label: 'Flash', icon: '💥', defaultIntensity: 60 },
+  { type: 'zoom', label: 'Zoom', icon: '🔍', defaultIntensity: 50 },
+  { type: 'spin', label: 'Spin', icon: '🌀', defaultIntensity: 50 },
+  { type: 'distortion', label: 'Distortion', icon: '🔮', defaultIntensity: 40 },
+  { type: 'vhs', label: 'VHS', icon: '📼', defaultIntensity: 50 },
+  { type: 'noise', label: 'Noise', icon: '📡', defaultIntensity: 30 },
+  { type: 'glow', label: 'Glow', icon: '✨', defaultIntensity: 50 },
+  { type: 'vignette', label: 'Vignette', icon: '🔲', defaultIntensity: 50 },
+  { type: 'film', label: 'Film', icon: '🎞️', defaultIntensity: 50 },
+  { type: 'pixelate', label: 'Pixelate', icon: '🟩', defaultIntensity: 50 },
+  { type: 'mirror', label: 'Mirror', icon: '🪞', defaultIntensity: 100 },
+  { type: 'chromaticAberration', label: 'Chromatic', icon: '🌈', defaultIntensity: 40 },
+];
+
+// ─── Background Removal ───────────────────────────────────────
+
+export type BgReplacementType = 'none' | 'color' | 'gradient' | 'image' | 'transparent';
+
+export interface BackgroundRemoval {
+  enabled: boolean;
+  processing: boolean;
+  progress: number;          // 0-100
+  tolerance: number;         // 0-100, color similarity threshold
+  edgeSmoothing: number;     // 0-100
+  replacementType: BgReplacementType;
+  replacementColor: string;  // hex
+  replacementGradient: { from: string; to: string; angle: number };
+  replacementImageUrl: string | null;
+  autoDetected: boolean;
+}
+
+export const DEFAULT_BG_REMOVAL: BackgroundRemoval = {
+  enabled: false,
+  processing: false,
+  progress: 0,
+  tolerance: 40,
+  edgeSmoothing: 30,
+  replacementType: 'transparent',
+  replacementColor: '#00ff00',
+  replacementGradient: { from: '#6366f1', to: '#ec4899', angle: 135 },
+  replacementImageUrl: null,
+  autoDetected: false,
+};
+
+// ─── Other Types ──────────────────────────────────────────────
+
 export interface TextOverlay {
   id: string;
   text: string;
@@ -107,6 +189,8 @@ export interface Clip {
   reverse: boolean;
   volume: number;         // 0-200
   effects: VideoEffects;
+  fxInstances: FxInstance[];
+  backgroundRemoval: BackgroundRemoval;
   keyframes: Keyframe[];
   crop?: { x: number; y: number; width: number; height: number };
   rotation: number;       // 0, 90, 180, 270
@@ -164,7 +248,8 @@ export type ToolType =
   | 'keyframe'
   | 'chromaKey'
   | 'filter'
-  | 'volume';
+  | 'volume'
+  | 'bgRemove';
 
 export interface EditorState {
   currentProject: Project | null;

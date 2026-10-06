@@ -11,6 +11,7 @@ import { CropPanel } from './panels/CropPanel';
 import { ChromaKeyPanel } from './panels/ChromaKeyPanel';
 import { KeyframePanel } from './panels/KeyframePanel';
 import { VolumePanel } from './panels/VolumePanel';
+import { BackgroundRemovePanel } from './panels/BackgroundRemovePanel';
 import { X } from 'lucide-react';
 
 export function ToolPanel() {
@@ -29,6 +30,7 @@ export function ToolPanel() {
     chromaKey: ChromaKeyPanel,
     keyframe: KeyframePanel,
     volume: VolumePanel,
+    bgRemove: BackgroundRemovePanel,
   };
 
   const Panel = panels[activeTool];

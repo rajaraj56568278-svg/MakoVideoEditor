@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import type {
   Project, Track, Clip, AudioTrack, Transition, TextOverlay,
   StickerOverlay, VideoEffects, ToolType, Keyframe,
-  DEFAULT_EFFECTS, DEFAULT_CHROMA_KEY,
+  FxInstance, BackgroundRemoval, DEFAULT_BG_REMOVAL,
 } from '../types';
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -18,6 +18,18 @@ function createDefaultEffects(): VideoEffects {
 
 function createDefaultChromaKey() {
   return { enabled: false, color: '#00ff00', tolerance: 30, smoothness: 20 };
+}
+
+function createDefaultBgRemoval(): BackgroundRemoval {
+  return {
+    enabled: false, processing: false, progress: 0,
+    tolerance: 40, edgeSmoothing: 30,
+    replacementType: 'transparent',
+    replacementColor: '#00ff00',
+    replacementGradient: { from: '#6366f1', to: '#ec4899', angle: 135 },
+    replacementImageUrl: null,
+    autoDetected: false,
+  };
 }
 
 function createTrack(type: Track['type']): Track {
@@ -94,6 +106,16 @@ interface ProjectState {
   // Effects
   updateClipEffects: (clipId: string, effects: Partial<VideoEffects>) => void;
 
+  // FX Effects
+  addFxInstance: (clipId: string, fx: Omit<FxInstance, 'id'>) => void;
+  removeFxInstance: (clipId: string, fxId: string) => void;
+  updateFxInstance: (clipId: string, fxId: string, updates: Partial<FxInstance>) => void;
+  clearAllFx: (clipId: string) => void;
+
+  // Background Removal
+  updateBackgroundRemoval: (clipId: string, updates: Partial<BackgroundRemoval>) => void;
+  resetBackgroundRemoval: (clipId: string) => void;
+
   // Keyframes
   addKeyframe: (clipId: string, keyframe: Partial<Keyframe>) => void;
   removeKeyframe: (clipId: string, keyframeId: string) => void;
@@ -151,6 +173,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       reverse: clipData.reverse || false,
       volume: clipData.volume ?? 100,
       effects: clipData.effects || createDefaultEffects(),
+      fxInstances: clipData.fxInstances || [],
+      backgroundRemoval: clipData.backgroundRemoval || createDefaultBgRemoval(),
       keyframes: clipData.keyframes || [],
       rotation: clipData.rotation || 0,
       chromaKey: clipData.chromaKey || createDefaultChromaKey(),
@@ -352,6 +376,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       reverse: false,
       volume: 0,
       effects: createDefaultEffects(),
+      fxInstances: [],
+      backgroundRemoval: createDefaultBgRemoval(),
       keyframes: [],
       rotation: 0,
       chromaKey: createDefaultChromaKey(),
@@ -412,6 +438,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       reverse: false,
       volume: 0,
       effects: createDefaultEffects(),
+      fxInstances: [],
+      backgroundRemoval: createDefaultBgRemoval(),
       keyframes: [],
       rotation: 0,
       chromaKey: createDefaultChromaKey(),
@@ -449,6 +477,110 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       clips: t.clips.map(c => {
         if (c.id !== clipId) return c;
         return { ...c, effects: { ...c.effects, ...effects } };
+      }),
+    }));
+
+    set({ project: { ...project, tracks, updatedAt: Date.now() } });
+  },
+
+  // ─── FX Effects Actions ────────────────────────────────────
+
+  addFxInstance: (clipId, fxData) => {
+    const { project } = get();
+    if (!project) return;
+
+    const fx: FxInstance = {
+      ...fxData,
+      id: uuid(),
+    };
+
+    const tracks = project.tracks.map(t => ({
+      ...t,
+      clips: t.clips.map(c => {
+        if (c.id !== clipId) return c;
+        return { ...c, fxInstances: [...c.fxInstances, fx] };
+      }),
+    }));
+
+    set({ project: { ...project, tracks, updatedAt: Date.now() } });
+  },
+
+  removeFxInstance: (clipId, fxId) => {
+    const { project } = get();
+    if (!project) return;
+
+    const tracks = project.tracks.map(t => ({
+      ...t,
+      clips: t.clips.map(c => {
+        if (c.id !== clipId) return c;
+        return { ...c, fxInstances: c.fxInstances.filter(f => f.id !== fxId) };
+      }),
+    }));
+
+    set({ project: { ...project, tracks, updatedAt: Date.now() } });
+  },
+
+  updateFxInstance: (clipId, fxId, updates) => {
+    const { project } = get();
+    if (!project) return;
+
+    const tracks = project.tracks.map(t => ({
+      ...t,
+      clips: t.clips.map(c => {
+        if (c.id !== clipId) return c;
+        return {
+          ...c,
+          fxInstances: c.fxInstances.map(f =>
+            f.id === fxId ? { ...f, ...updates } : f
+          ),
+        };
+      }),
+    }));
+
+    set({ project: { ...project, tracks, updatedAt: Date.now() } });
+  },
+
+  clearAllFx: (clipId) => {
+    const { project } = get();
+    if (!project) return;
+
+    const tracks = project.tracks.map(t => ({
+      ...t,
+      clips: t.clips.map(c => {
+        if (c.id !== clipId) return c;
+        return { ...c, fxInstances: [] };
+      }),
+    }));
+
+    set({ project: { ...project, tracks, updatedAt: Date.now() } });
+  },
+
+  // ─── Background Removal Actions ────────────────────────────
+
+  updateBackgroundRemoval: (clipId, updates) => {
+    const { project } = get();
+    if (!project) return;
+
+    const tracks = project.tracks.map(t => ({
+      ...t,
+      clips: t.clips.map(c => {
+        if (c.id !== clipId) return c;
+        return { ...c, backgroundRemoval: { ...c.backgroundRemoval, ...updates } };
+      }),
+    }));
+
+    set({ project: { ...project, tracks, updatedAt: Date.now() } });
+  },
+
+  resetBackgroundRemoval: (clipId) => {
+    const { project } = get();
+    if (!project) return;
+
+    const tracks = project.tracks.map(t => ({
+      ...t,
+      clips: t.clips.map(c => {
+        if (c.id !== clipId) return c;
+        return { ...c, backgroundRemoval: createDefaultBgRemoval() };
       }),
     }));
 

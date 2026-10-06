@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import {
   ArrowLeft, Undo2, Redo2, Download, Play, Pause,
   SkipBack, SkipForward, Scissors, Type, Image, Music,
-  Sparkles, Sliders, Layers, ZoomIn, ZoomOut,
+  Sparkles, Sliders, Layers, ZoomIn, ZoomOut, Eraser,
 } from 'lucide-react';
 import { useProjectStore } from '../store/projectStore';
 import { useHistoryStore } from '../store/historyStore';
@@ -25,9 +25,10 @@ const TOOL_BUTTONS: { tool: ToolType; icon: React.ElementType; label: string }[]
   { tool: 'text', icon: Type, label: 'Text' },
   { tool: 'sticker', icon: Image, label: 'Sticker' },
   { tool: 'audio', icon: Music, label: 'Audio' },
-  { tool: 'effects', icon: Sparkles, label: 'Effects' },
+  { tool: 'effects', icon: Sparkles, label: 'FX' },
   { tool: 'adjust', icon: Sliders, label: 'Adjust' },
   { tool: 'transition', icon: Layers, label: 'Transition' },
+  { tool: 'bgRemove', icon: Eraser, label: 'BG Remove' },
 ];
 
 export function Editor({ onBack }: Props) {
