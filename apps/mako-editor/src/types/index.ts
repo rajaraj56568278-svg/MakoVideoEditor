@@ -97,6 +97,10 @@ export interface Clip {
 
   // AI bg removal
   bgRemoval: boolean;
+
+  // Filter preset
+  activeFilter: FilterType;
+  filterIntensity: number; // 0-100
 }
 
 // ─── Track ───
@@ -124,6 +128,110 @@ export interface Project {
   fps: number;
   thumbnail?: string;
 }
+
+// ─── Filter Presets ───
+export type FilterType =
+  | 'original'
+  | 'bright'
+  | 'vivid'
+  | 'warm'
+  | 'cool'
+  | 'cinematic'
+  | 'vintage'
+  | 'bw'
+  | 'sepia'
+  | 'dramatic'
+  | 'fade'
+  | 'sunset';
+
+export interface FilterPreset {
+  id: FilterType;
+  name: string;
+  cssFilters: {
+    brightness: number;   // multiplier, 1 = no change
+    contrast: number;     // multiplier
+    saturate: number;     // multiplier
+    grayscale: number;    // 0-1
+    sepia: number;        // 0-1
+    hueRotate: number;    // degrees
+  };
+  thumbnailGradient: string; // for preview swatch
+}
+
+export const FILTER_PRESETS: FilterPreset[] = [
+  {
+    id: 'original',
+    name: 'Original',
+    cssFilters: { brightness: 1, contrast: 1, saturate: 1, grayscale: 0, sepia: 0, hueRotate: 0 },
+    thumbnailGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  },
+  {
+    id: 'bright',
+    name: 'Bright',
+    cssFilters: { brightness: 1.25, contrast: 1.05, saturate: 1.1, grayscale: 0, sepia: 0, hueRotate: 0 },
+    thumbnailGradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+  },
+  {
+    id: 'vivid',
+    name: 'Vivid',
+    cssFilters: { brightness: 1.05, contrast: 1.2, saturate: 1.6, grayscale: 0, sepia: 0, hueRotate: 0 },
+    thumbnailGradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+  },
+  {
+    id: 'warm',
+    name: 'Warm',
+    cssFilters: { brightness: 1.05, contrast: 1.05, saturate: 1.2, grayscale: 0, sepia: 0.25, hueRotate: -5 },
+    thumbnailGradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+  },
+  {
+    id: 'cool',
+    name: 'Cool',
+    cssFilters: { brightness: 1.05, contrast: 1.05, saturate: 0.9, grayscale: 0, sepia: 0, hueRotate: 20 },
+    thumbnailGradient: 'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
+  },
+  {
+    id: 'cinematic',
+    name: 'Cinematic',
+    cssFilters: { brightness: 0.95, contrast: 1.15, saturate: 0.85, grayscale: 0, sepia: 0.12, hueRotate: -3 },
+    thumbnailGradient: 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)',
+  },
+  {
+    id: 'vintage',
+    name: 'Vintage',
+    cssFilters: { brightness: 1.1, contrast: 0.9, saturate: 0.8, grayscale: 0, sepia: 0.45, hueRotate: -8 },
+    thumbnailGradient: 'linear-gradient(135deg, #d4a574 0%, #8b6914 100%)',
+  },
+  {
+    id: 'bw',
+    name: 'B&W',
+    cssFilters: { brightness: 1.05, contrast: 1.2, saturate: 1, grayscale: 1, sepia: 0, hueRotate: 0 },
+    thumbnailGradient: 'linear-gradient(135deg, #434343 0%, #000000 100%)',
+  },
+  {
+    id: 'sepia',
+    name: 'Sepia',
+    cssFilters: { brightness: 1.05, contrast: 1.05, saturate: 1, grayscale: 0, sepia: 0.8, hueRotate: 0 },
+    thumbnailGradient: 'linear-gradient(135deg, #c9a96e 0%, #6b4226 100%)',
+  },
+  {
+    id: 'dramatic',
+    name: 'Dramatic',
+    cssFilters: { brightness: 0.88, contrast: 1.4, saturate: 0.7, grayscale: 0, sepia: 0, hueRotate: 0 },
+    thumbnailGradient: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+  },
+  {
+    id: 'fade',
+    name: 'Fade',
+    cssFilters: { brightness: 1.2, contrast: 0.8, saturate: 0.7, grayscale: 0, sepia: 0.1, hueRotate: 0 },
+    thumbnailGradient: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset',
+    cssFilters: { brightness: 1.05, contrast: 1.1, saturate: 1.4, grayscale: 0, sepia: 0.25, hueRotate: -12 },
+    thumbnailGradient: 'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)',
+  },
+];
 
 // ─── Editor State ───
 export type EditorView = 'home' | 'editor';

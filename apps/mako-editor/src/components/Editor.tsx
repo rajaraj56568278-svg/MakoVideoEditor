@@ -12,6 +12,7 @@ import CropPanel from './CropPanel';
 import ChromaKeyPanel from './ChromaKeyPanel';
 import KeyframePanel from './KeyframePanel';
 import TrimPanel from './TrimPanel';
+import FiltersPanel from './FiltersPanel';
 import ExportModal from './ExportModal';
 import { saveProject } from '../utils/db';
 import type { BottomPanel } from '../types';
@@ -125,7 +126,7 @@ export default function Editor() {
           <div className="flex-1 min-h-0 border-t border-border overflow-hidden">
             {bottomPanel === 'effects' && <EffectsPanel mode="effects" onClose={handleClosePanel} />}
             {bottomPanel === 'adjustments' && <EffectsPanel mode="adjustments" onClose={handleClosePanel} />}
-            {bottomPanel === 'filters' && <EffectsPanel mode="filters" onClose={handleClosePanel} />}
+            {bottomPanel === 'filters' && <FiltersPanel onClose={handleClosePanel} />}
             {bottomPanel === 'text' && <TextEditor mode="text" onClose={handleClosePanel} />}
             {bottomPanel === 'stickers' && <TextEditor mode="stickers" onClose={handleClosePanel} />}
             {bottomPanel === 'audio' && <AudioPanel onClose={handleClosePanel} />}
@@ -197,6 +198,8 @@ export default function Editor() {
                   opacity: 1,
                   chromaKey: { enabled: false, color: '#00ff00', tolerance: 30 },
                   bgRemoval: false,
+                  activeFilter: 'original' as const,
+                  filterIntensity: 100,
                 };
                 dispatch({ type: 'ADD_CLIP', clip });
               }
@@ -237,8 +240,18 @@ export default function Editor() {
         <NavButton
           icon={<span className="text-lg">✨</span>}
           label="Effects"
-          active={bottomPanel === 'effects' || bottomPanel === 'adjustments' || bottomPanel === 'filters'}
+          active={bottomPanel === 'effects' || bottomPanel === 'adjustments'}
           onClick={() => handleOpenPanel('effects')}
+        />
+        <NavButton
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.828 2.828a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            </svg>
+          }
+          label="Filters"
+          active={bottomPanel === 'filters'}
+          onClick={() => handleOpenPanel('filters')}
         />
       </nav>
 

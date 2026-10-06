@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useProject } from '../store/ProjectContext';
-import { getEffectFilter } from '../utils/mediaUtils';
+import { getEffectFilter, getFilterPresetCss } from '../utils/mediaUtils';
 import { formatTime } from '../utils/timeUtils';
 
 export default function VideoPreview() {
@@ -91,8 +91,19 @@ export default function VideoPreview() {
     dispatch({ type: 'SET_TIME', time: newTime });
   }, [state.currentTime, project.duration, dispatch]);
 
-  // Build CSS filter string for effects
-  const filterStr = activeVideoClip ? getEffectFilter(activeVideoClip.effects) : 'none';
+  // Build CSS filter string combining effects + named filter preset
+  let filterStr = 'none';
+  if (activeVideoClip) {
+    const effectsFilter = getEffectFilter(activeVideoClip.effects);
+    const presetFilter = getFilterPresetCss(activeVideoClip.activeFilter ?? 'original', activeVideoClip.filterIntensity ?? 100);
+    if (effectsFilter !== 'none' && presetFilter !== 'none') {
+      filterStr = `${effectsFilter} ${presetFilter}`;
+    } else if (effectsFilter !== 'none') {
+      filterStr = effectsFilter;
+    } else if (presetFilter !== 'none') {
+      filterStr = presetFilter;
+    }
+  }
   const clipOpacity = activeVideoClip?.opacity ?? 1;
   const clipRotation = activeVideoClip?.rotation ?? 0;
   const clipScale = activeVideoClip?.scale ?? 1;

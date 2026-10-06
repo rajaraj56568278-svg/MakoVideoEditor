@@ -1,4 +1,5 @@
-import type { MediaFile, MediaType } from '../types';
+import type { MediaFile, MediaType, FilterType } from '../types';
+import { FILTER_PRESETS } from '../types';
 
 export function getMediaType(file: File): MediaType {
   if (file.type.startsWith('video/')) return 'video';
@@ -130,5 +131,37 @@ export function getEffectFilter(effects: {
   if (effects.saturation !== 0) parts.push(`saturate(${1 + effects.saturation / 100})`);
   if (effects.grayscale > 0) parts.push(`grayscale(${effects.grayscale / 100})`);
   if (effects.sepia > 0) parts.push(`sepia(${effects.sepia / 100})`);
+  return parts.length > 0 ? parts.join(' ') : 'none';
+}
+
+/**
+ * Build a CSS filter string from a named filter preset + intensity (0-100).
+ * Intensity blends linearly between "no filter" and the full preset.
+ */
+export function getFilterPresetCss(filterId: FilterType, intensity: number = 100): string {
+  if (filterId === 'original' || intensity <= 0) return 'none';
+
+  const preset = FILTER_PRESETS.find(p => p.id === filterId);
+  if (!preset) return 'none';
+
+  const t = Math.max(0, Math.min(100, intensity)) / 100;
+  const f = preset.cssFilters;
+  const parts: string[] = [];
+
+  // Interpolate each channel between identity (1 or 0) and the preset value
+  const brightness = 1 + (f.brightness - 1) * t;
+  const contrast = 1 + (f.contrast - 1) * t;
+  const saturate = 1 + (f.saturate - 1) * t;
+  const grayscale = f.grayscale * t;
+  const sepia = f.sepia * t;
+  const hueRotate = f.hueRotate * t;
+
+  if (brightness !== 1) parts.push(`brightness(${brightness.toFixed(3)})`);
+  if (contrast !== 1) parts.push(`contrast(${contrast.toFixed(3)})`);
+  if (saturate !== 1) parts.push(`saturate(${saturate.toFixed(3)})`);
+  if (grayscale > 0) parts.push(`grayscale(${grayscale.toFixed(3)})`);
+  if (sepia > 0) parts.push(`sepia(${sepia.toFixed(3)})`);
+  if (hueRotate !== 0) parts.push(`hue-rotate(${hueRotate.toFixed(1)}deg)`);
+
   return parts.length > 0 ? parts.join(' ') : 'none';
 }

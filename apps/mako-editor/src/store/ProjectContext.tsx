@@ -352,6 +352,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       opacity: clipData.opacity ?? 1,
       chromaKey: clipData.chromaKey ?? { enabled: false, color: '#00ff00', tolerance: 30 },
       bgRemoval: clipData.bgRemoval ?? false,
+      activeFilter: clipData.activeFilter ?? 'original',
+      filterIntensity: clipData.filterIntensity ?? 100,
     };
     dispatch({ type: 'ADD_CLIP', clip });
   }, [state.currentTime]);

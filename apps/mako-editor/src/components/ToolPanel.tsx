@@ -195,6 +195,7 @@ export default function ToolPanel({ onOpenPanel }: ToolPanelProps) {
 }
 
 function SelectedClipTools({ selectedClip, onOpenPanel }: { selectedClip: any; onOpenPanel: (p: BottomPanel) => void }) {
+  const { dispatch } = useProject();
   return (
     <div className="p-3 space-y-3">
       <p className="text-xs text-text-secondary font-medium">
@@ -210,9 +211,10 @@ function SelectedClipTools({ selectedClip, onOpenPanel }: { selectedClip: any; o
       </div>
 
       {/* Row 2: Visual */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-5 gap-2">
         <ToolButton icon="✨" label="Effects" onClick={() => onOpenPanel('effects')} />
         <ToolButton icon="🎨" label="Adjust" onClick={() => onOpenPanel('adjustments')} />
+        <ToolButton icon="🎬" label="Filters" onClick={() => onOpenPanel('filters')} />
         <ToolButton icon="" label="Chroma" onClick={() => onOpenPanel('chroma')} />
         <ToolButton icon="📊" label="Keyframe" onClick={() => onOpenPanel('keyframe')} />
       </div>
@@ -279,7 +281,7 @@ function NoSelectionTools({ onOpenPanel }: { onOpenPanel: (p: BottomPanel) => vo
       <div className="grid grid-cols-4 gap-2">
         <ToolButton icon="" label="Captions" onClick={() => {}} comingSoon />
         <ToolButton icon="📊" label="Keyframe" onClick={() => onOpenPanel('keyframe')} />
-        <ToolButton icon="" label="Filters" onClick={() => onOpenPanel('filters')} />
+        <ToolButton icon="🎬" label="Filters" onClick={() => onOpenPanel('filters')} />
         <ToolButton icon="" label="Adjust" onClick={() => onOpenPanel('adjustments')} />
       </div>
     </div>
