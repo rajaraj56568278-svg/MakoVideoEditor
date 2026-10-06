@@ -1,15 +1,106 @@
-/* The theme tokens (--background, --card, --brand, --canvas, --chart-1…5,
-   light and dark) are injected by @makoai/app-sdk, and the house base and kit
-   styles come from @makoai/app-sdk/ui.css (imported before this file).
-   Override a token here to re-theme; keep app layout below. */
+@import "tailwindcss";
 
-.page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
+@theme {
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #12121a;
+  --color-bg-tertiary: #1a1a26;
+  --color-bg-elevated: #222233;
+  --color-bg-hover: #2a2a3d;
+  --color-accent: #6366f1;
+  --color-accent-hover: #818cf8;
+  --color-accent-dim: #4f46e5;
+  --color-surface: #16161f;
+  --color-border: #2a2a3d;
+  --color-border-light: #3a3a50;
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #9090a8;
+  --color-text-muted: #606078;
+  --color-danger: #ef4444;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-timeline-bg: #0d0d14;
+  --color-timeline-track: #1a1a28;
+  --color-playhead: #ef4444;
 }
 
-.muted {
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html, body, #root {
   margin: 0;
-  color: var(--muted-foreground);
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0a0a0f;
+  color: #f0f0f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a3d; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a50; }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-track {
+  background: #2a2a3d;
+  height: 4px;
+  border-radius: 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #6366f1;
+  margin-top: -6px;
+  border: 2px solid #0a0a0f;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-slide-up { animation: slide-up 0.3s ease-out; }
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass {
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.clip-video { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+.clip-audio { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.clip-text { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.clip-sticker { background: linear-gradient(135deg, #ec4899, #db2777); }
+
+.vignette-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
 }
