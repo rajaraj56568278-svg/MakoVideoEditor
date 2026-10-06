@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { existsSync, readdirSync } from "node:fs";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { makoData } from "@makoai/app-sdk/vite";
 
 const bindingsDir = new URL("./bindings", import.meta.url);
@@ -10,7 +11,7 @@ export default defineConfig({
   // LOCAL `vite dev`, straight from the Mako API — see AGENTS.md → Data.
   // Inside Mako's own sandbox the launcher answers those paths itself and
   // the plugin stays idle.
-  plugins: [react(), makoData()],
+  plugins: [react(), tailwindcss(), makoData()],
   // The binding names, for RefreshAllButton (@makoai/app-sdk/ui): a new
   // bindings/<name>.sql is picked up without touching the code.
   define: {

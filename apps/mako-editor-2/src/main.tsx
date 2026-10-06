@@ -1,9 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-// The house style first, the app's own rules after it so they win.
-import "@makoai/app-sdk/ui.css";
-import "./styles.css";
+import { useProjectStore } from "./store/projectStore";
+import "./index.css";
+
+// Expose store for testing
+(window as any).__zustandStore = useProjectStore;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -1,32 +1,56 @@
-import {
-  Card,
-  KpiRow,
-  KpiTile,
-  PageHeader,
-  RefreshAllButton,
-} from "@makoai/app-sdk/ui";
+import { useState, useCallback, useEffect } from 'react';
+import { useProjectStore } from './store/projectStore';
+import { useHistoryStore } from './store/historyStore';
+import { HomeScreen } from './components/HomeScreen';
+import { Editor } from './components/Editor';
+import type { Project } from './types';
 
-// Mako's house dashboard kit — see node_modules/@makoai/app-sdk/README.md.
+type Screen = 'home' | 'editor';
+
 export default function App() {
+  const [screen, setScreen] = useState<Screen>('home');
+  const { loadProject } = useProjectStore();
+  const { clearHistory } = useHistoryStore();
+
+  // Expose navigation for testing
+  useEffect(() => {
+    (window as any).__navigateToEditor = (name?: string) => {
+      if (name) {
+        useProjectStore.getState().createProject(name);
+      }
+      clearHistory();
+      setScreen('editor');
+    };
+    (window as any).__navigateToHome = () => {
+      setScreen('home');
+    };
+  }, [clearHistory]);
+
+  const handleOpenProject = useCallback((project: Project) => {
+    loadProject(project);
+    clearHistory();
+    setScreen('editor');
+  }, [loadProject, clearHistory]);
+
+  const handleNewProject = useCallback((name: string) => {
+    const { createProject } = useProjectStore.getState();
+    createProject(name);
+    clearHistory();
+    setScreen('editor');
+  }, [clearHistory]);
+
+  const handleBack = useCallback(() => {
+    setScreen('home');
+  }, []);
+
   return (
-    <main className="page">
-      <PageHeader
-        title="Mako Editor"
-        subtitle="Built with Mako Apps — edit src/App.tsx to get started."
-        actions={<RefreshAllButton bindings={__APP_BINDING_NAMES__} />}
-      />
-      <KpiRow>
-        <KpiTile label="Your first KPI" value="—" hint="Add a binding, then useQuery()" />
-      </KpiRow>
-      <Card
-        title="Getting started"
-        description="Data comes from bindings/<name>.sql; read it with useQuery('<name>')."
-      >
-        <p className="muted">
-          The theme tokens (--background, --brand, --chart-1…) and the kit
-          come from @makoai/app-sdk: style with the tokens, reuse the kit.
-        </p>
-      </Card>
-    </main>
+    <div className="h-full w-full overflow-hidden bg-bg-primary">
+      {screen === 'home' && (
+        <HomeScreen onNewProject={handleNewProject} onOpenProject={handleOpenProject} />
+      )}
+      {screen === 'editor' && (
+        <Editor onBack={handleBack} />
+      )}
+    </div>
   );
 }
