@@ -13,6 +13,7 @@ import ChromaKeyPanel from './ChromaKeyPanel';
 import KeyframePanel from './KeyframePanel';
 import TrimPanel from './TrimPanel';
 import FiltersPanel from './FiltersPanel';
+import AiHdPanel from './panels/AiHdPanel';
 import ExportModal from './ExportModal';
 import { saveProject } from '../utils/db';
 import type { BottomPanel } from '../types';
@@ -71,7 +72,17 @@ export default function Editor() {
           </button>
           <div>
             <h1 className="text-sm font-semibold text-text-primary truncate max-w-[140px]">{project.name}</h1>
-            <p className="text-[10px] text-text-muted">{project.resolution} • {project.aspectRatio}</p>
+            <p className="text-[10px] text-text-muted flex items-center gap-1">
+              {project.resolution} • {project.aspectRatio}
+              {state.aiHd.enabled && (
+                <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-violet-500/20 text-violet-400 font-medium">
+                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  AI HD
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
@@ -137,6 +148,7 @@ export default function Editor() {
             {bottomPanel === 'chroma' && <ChromaKeyPanel onClose={handleClosePanel} />}
             {bottomPanel === 'keyframe' && <KeyframePanel onClose={handleClosePanel} />}
             {bottomPanel === 'trim' && <TrimPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'aihd' && <AiHdPanel onClose={handleClosePanel} />}
           </div>
         )}
 
@@ -248,6 +260,22 @@ export default function Editor() {
           active={bottomPanel === 'filters'}
           onClick={() => handleOpenPanel('filters')}
         />
+        <NavButton
+          icon={
+            <span className="relative">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              {state.aiHd.enabled && (
+                <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+              )}
+            </span>
+          }
+          label="AI HD"
+          active={bottomPanel === 'aihd'}
+          onClick={() => handleOpenPanel('aihd')}
+          highlight={state.aiHd.enabled}
+        />
       </nav>
 
       {/* Export Modal */}
@@ -256,17 +284,18 @@ export default function Editor() {
   );
 }
 
-function NavButton({ icon, label, active, onClick }: {
+function NavButton({ icon, label, active, onClick, highlight }: {
   icon: React.ReactNode;
   label: string;
   active: boolean;
   onClick: () => void;
+  highlight?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors ${
-        active ? 'text-accent' : 'text-text-muted hover:text-text-secondary'
+        active ? 'text-accent' : highlight ? 'text-violet-400' : 'text-text-muted hover:text-text-secondary'
       }`}
     >
       {icon}

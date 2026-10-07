@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useProject } from '../store/ProjectContext';
 import { getEffectFilter } from '../utils/mediaUtils';
+import { applyAiHdToCanvas, getAiHdExportResolution, getAiHdDescription } from '../utils/aiEnhance';
 
 type ExportResolution = '720p' | '1080p' | '4K';
 type ExportStatus = 'idle' | 'preparing' | 'recording' | 'processing' | 'done' | 'error';
@@ -43,9 +44,31 @@ export default function ExportModal() {
 
     try {
       const dims = getOutputDimensions();
+      const aiHdSettings = state.aiHd;
+
+      // If AI HD is enabled with a specific quality, use that resolution
+      let exportDims = dims;
+      if (aiHdSettings.enabled && aiHdSettings.quality !== 'auto') {
+        // Find the source video dimensions
+        const firstVideoClip = project.clips.find(c => (c.type === 'video') && c.mediaUrl);
+        let srcW = dims.width, srcH = dims.height;
+        if (firstVideoClip?.mediaUrl) {
+          const tmpVideo = document.createElement('video');
+          tmpVideo.src = firstVideoClip.mediaUrl;
+          await new Promise<void>(resolve => {
+            tmpVideo.onloadedmetadata = () => resolve();
+            setTimeout(resolve, 3000);
+          });
+          srcW = tmpVideo.videoWidth || dims.width;
+          srcH = tmpVideo.videoHeight || dims.height;
+          tmpVideo.src = '';
+        }
+        exportDims = getAiHdExportResolution(aiHdSettings, srcW, srcH, project.aspectRatio);
+      }
+
       const canvas = document.createElement('canvas');
-      canvas.width = dims.width;
-      canvas.height = dims.height;
+      canvas.width = exportDims.width;
+      canvas.height = exportDims.height;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Canvas context not available');
 
@@ -242,6 +265,11 @@ export default function ExportModal() {
           }
         }
 
+        // Apply AI HD enhancement to the frame if enabled
+        if (aiHdSettings.enabled && aiHdSettings.strength > 0) {
+          applyAiHdToCanvas(ctx, canvas.width, canvas.height, aiHdSettings);
+        }
+
         if (currentTime < totalDuration) {
           requestAnimationFrame(renderFrame);
         } else {
@@ -270,7 +298,7 @@ export default function ExportModal() {
       setError(err.message || 'Export failed. Try a lower resolution.');
       setStatus('error');
     }
-  }, [project, resolution]);
+  }, [project, resolution, state.aiHd]);
 
   function handleDownload() {
     if (!exportUrl) return;
@@ -353,6 +381,22 @@ export default function ExportModal() {
                 <div className="flex justify-between text-xs">
                   <span className="text-text-muted">Format</span>
                   <span className="text-text-secondary">WebM / MP4</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-text-muted">FPS</span>
+                  <span className="text-text-secondary">{project.fps} (original)</span>
+                </div>
+                {/* AI HD Status */}
+                <div className="flex justify-between text-xs items-center pt-1 border-t border-border mt-1">
+                  <span className="text-text-muted flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    AI HD
+                  </span>
+                  <span className={`font-medium ${state.aiHd.enabled ? 'text-violet-400' : 'text-text-muted'}`}>
+                    {state.aiHd.enabled ? getAiHdDescription(state.aiHd) : 'Off'}
+                  </span>
                 </div>
               </div>
 

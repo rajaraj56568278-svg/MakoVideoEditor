@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useProject } from '../store/ProjectContext';
 import { getEffectFilter, getFilterPresetCss } from '../utils/mediaUtils';
+import { getAiHdPreviewFilter } from '../utils/aiEnhance';
 import { formatTime } from '../utils/timeUtils';
 
 export default function VideoPreview() {
@@ -123,18 +124,17 @@ export default function VideoPreview() {
     dispatch({ type: 'SET_TIME', time: newTime });
   }, [state.currentTime, project.duration, dispatch]);
 
-  // Build CSS filter string combining effects + named filter preset
+  // Build CSS filter string combining effects + named filter preset + AI HD
   let filterStr = 'none';
   if (activeVideoClip) {
     const effectsFilter = getEffectFilter(activeVideoClip.effects);
     const presetFilter = getFilterPresetCss(activeVideoClip.activeFilter ?? 'original', activeVideoClip.filterIntensity ?? 100);
-    if (effectsFilter !== 'none' && presetFilter !== 'none') {
-      filterStr = `${effectsFilter} ${presetFilter}`;
-    } else if (effectsFilter !== 'none') {
-      filterStr = effectsFilter;
-    } else if (presetFilter !== 'none') {
-      filterStr = presetFilter;
-    }
+    const aiHdFilter = getAiHdPreviewFilter(state.aiHd);
+    const filterParts: string[] = [];
+    if (effectsFilter !== 'none') filterParts.push(effectsFilter);
+    if (presetFilter !== 'none') filterParts.push(presetFilter);
+    if (aiHdFilter) filterParts.push(aiHdFilter);
+    filterStr = filterParts.length > 0 ? filterParts.join(' ') : 'none';
   }
   const clipOpacity = activeVideoClip?.opacity ?? 1;
   const clipRotation = activeVideoClip?.rotation ?? 0;
@@ -252,6 +252,17 @@ export default function VideoPreview() {
                 {activeTransition.type.replace('-', ' ')}
               </span>
             </div>
+          </div>
+        )}
+
+        {/* AI HD badge */}
+        {state.aiHd.enabled && activeVideoClip && (
+          <div className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-500/80 backdrop-blur-sm">
+            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span className="text-[9px] font-bold text-white tracking-wide">AI HD</span>
+            <span className="text-[8px] text-white/70">{state.aiHd.strength}%</span>
           </div>
         )}
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react';
-import type { Project, Clip, Track, EditorState, BottomPanel, ToolType, Effects, TextConfig } from '../types';
-import { defaultEffects, defaultTransition } from '../types';
+import type { Project, Clip, Track, EditorState, BottomPanel, ToolType, Effects, TextConfig, AiHdSettings } from '../types';
+import { defaultEffects, defaultTransition, defaultAiHdSettings } from '../types';
 
 // ─── Actions ───
 type Action =
@@ -20,6 +20,7 @@ type Action =
   | { type: 'SET_TOOL'; tool: ToolType }
   | { type: 'SET_BOTTOM_PANEL'; panel: BottomPanel }
   | { type: 'SET_EXPORT_MODAL'; show: boolean }
+  | { type: 'SET_AI_HD'; settings: Partial<AiHdSettings> }
   | { type: 'ADD_TRACK'; track: Track }
   | { type: 'TOGGLE_TRACK_MUTE'; trackId: string }
   | { type: 'TOGGLE_TRACK_LOCK'; trackId: string }
@@ -58,6 +59,7 @@ const initialState: EditorState = {
   activeTool: 'select',
   bottomPanel: 'none',
   showExportModal: false,
+  aiHd: { ...defaultAiHdSettings },
   history: [],
   historyIndex: -1,
 };
@@ -229,6 +231,9 @@ function reducer(state: EditorState, action: Action): EditorState {
 
     case 'SET_EXPORT_MODAL':
       return { ...state, showExportModal: action.show };
+
+    case 'SET_AI_HD':
+      return { ...state, aiHd: { ...state.aiHd, ...action.settings } };
 
     case 'ADD_TRACK': {
       if (!state.project) return state;

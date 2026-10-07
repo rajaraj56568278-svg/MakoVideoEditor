@@ -248,10 +248,27 @@ export const FILTER_PRESETS: FilterPreset[] = [
   },
 ];
 
+// ─── AI HD Enhancement ───
+export type AiHdQuality = 'auto' | '720p' | '1080p' | '4K';
+
+export interface AiHdSettings {
+  enabled: boolean;
+  quality: AiHdQuality;
+  strength: number; // 0-100, default 50
+  showBeforeAfter: boolean;
+}
+
+export const defaultAiHdSettings: AiHdSettings = {
+  enabled: false,
+  quality: 'auto',
+  strength: 50,
+  showBeforeAfter: false,
+};
+
 // ─── Editor State ───
 export type EditorView = 'home' | 'editor';
 export type ToolType = 'select' | 'trim' | 'split' | 'text' | 'sticker' | 'audio' | 'effects' | 'transitions' | 'crop';
-export type BottomPanel = 'none' | 'tools' | 'effects' | 'text' | 'audio' | 'stickers' | 'transitions' | 'adjustments' | 'filters' | 'speed' | 'crop' | 'chroma' | 'keyframe' | 'trim';
+export type BottomPanel = 'none' | 'tools' | 'effects' | 'text' | 'audio' | 'stickers' | 'transitions' | 'adjustments' | 'filters' | 'speed' | 'crop' | 'chroma' | 'keyframe' | 'trim' | 'aihd';
 
 export interface EditorState {
   view: EditorView;
@@ -263,6 +280,7 @@ export interface EditorState {
   activeTool: ToolType;
   bottomPanel: BottomPanel;
   showExportModal: boolean;
+  aiHd: AiHdSettings;
   history: Project[];
   historyIndex: number;
 }
