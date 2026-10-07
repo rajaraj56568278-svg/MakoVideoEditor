@@ -24,6 +24,30 @@ export default function Timeline() {
     marks.push(t);
   }
 
+  // Find adjacent clip pairs on each track for transition buttons
+  const getTransitionPoints = (trackIndex: number) => {
+    const trackClips = project.clips
+      .filter(c => c.trackIndex === trackIndex)
+      .sort((a, b) => a.startTime - b.startTime);
+    
+    const points: { leftClip: Clip; rightClip: Clip; x: number }[] = [];
+    for (let i = 0; i < trackClips.length - 1; i++) {
+      const left = trackClips[i];
+      const right = trackClips[i + 1];
+      const leftEnd = left.startTime + left.duration;
+      // Clips are "adjacent" if gap is less than 0.5s
+      if (right.startTime - leftEnd < 0.5) {
+        const boundaryTime = (leftEnd + right.startTime) / 2;
+        points.push({
+          leftClip: left,
+          rightClip: right,
+          x: secondsToPixels(boundaryTime, state.zoom),
+        });
+      }
+    }
+    return points;
+  };
+
   // Seek on timeline click
   const handleTimelineClick = useCallback((e: React.MouseEvent) => {
     if (!timelineRef.current) return;
@@ -89,6 +113,13 @@ export default function Timeline() {
     setDragging(null);
     setTrimming(null);
   }, []);
+
+  // Handle transition button click
+  const handleTransitionClick = useCallback((e: React.MouseEvent, clipId: string) => {
+    e.stopPropagation();
+    dispatch({ type: 'SELECT_CLIP', clipId });
+    dispatch({ type: 'SET_BOTTOM_PANEL', panel: 'transitions' });
+  }, [dispatch]);
 
   // Auto-scroll to playhead when playing
   useEffect(() => {
@@ -180,6 +211,7 @@ export default function Timeline() {
           {/* Tracks */}
           {project.tracks.map((track, trackIndex) => {
             const trackClips = project.clips.filter(c => c.trackIndex === trackIndex);
+            const transitionPoints = getTransitionPoints(trackIndex);
 
             return (
               <div key={track.id} className="relative h-12 border-b border-border/50 group">
@@ -222,6 +254,11 @@ export default function Timeline() {
                           </div>
                         )}
 
+                        {/* Transition indicator on the clip's left edge */}
+                        {clip.transition.type !== 'none' && (
+                          <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-md bg-white/30" />
+                        )}
+
                         {/* Trim handles */}
                         <div
                           className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 rounded-l-md"
@@ -240,6 +277,34 @@ export default function Timeline() {
                           }}
                         />
                       </div>
+                    );
+                  })}
+
+                  {/* Transition buttons between adjacent clips */}
+                  {transitionPoints.map((tp, idx) => {
+                    const hasTransition = tp.rightClip.transition.type !== 'none';
+                    return (
+                      <button
+                        key={`trans-${trackIndex}-${idx}`}
+                        className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 flex items-center justify-center transition-all duration-150 ${
+                          hasTransition
+                            ? 'w-6 h-6 rounded-full bg-accent shadow-lg shadow-accent/30 hover:bg-accent-hover'
+                            : 'w-5 h-5 rounded-full bg-bg-elevated border border-border-light hover:bg-bg-hover hover:border-accent/50 hover:w-6 hover:h-6'
+                        }`}
+                        style={{ left: tp.x }}
+                        onClick={(e) => handleTransitionClick(e, tp.rightClip.id)}
+                        title={hasTransition ? `Transition: ${tp.rightClip.transition.type}` : 'Add transition'}
+                      >
+                        {hasTransition ? (
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-3 h-3 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                        )}
+                      </button>
                     );
                   })}
                 </div>

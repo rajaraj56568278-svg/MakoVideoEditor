@@ -19,12 +19,13 @@ import type { BottomPanel } from '../types';
 
 export default function Editor() {
   const { state, dispatch, selectedClip } = useProject();
-  const [bottomPanel, setBottomPanel] = useState<BottomPanel>('none');
   const [showToolPanel, setShowToolPanel] = useState(true);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const project = state.project;
   if (!project) return null;
+
+  const bottomPanel = state.bottomPanel;
 
   // Auto-save project
   useEffect(() => {
@@ -38,12 +39,12 @@ export default function Editor() {
   }, [project]);
 
   const handleOpenPanel = useCallback((panel: BottomPanel) => {
-    setBottomPanel(prev => prev === panel ? 'none' : panel);
-  }, []);
+    dispatch({ type: 'SET_BOTTOM_PANEL', panel: state.bottomPanel === panel ? 'none' : panel });
+  }, [state.bottomPanel, dispatch]);
 
   const handleClosePanel = useCallback(() => {
-    setBottomPanel('none');
-  }, []);
+    dispatch({ type: 'SET_BOTTOM_PANEL', panel: 'none' });
+  }, [dispatch]);
 
   function handleGoHome() {
     // Save before leaving
@@ -208,6 +209,12 @@ export default function Editor() {
           }}
         />
         <NavButton
+          icon={<span className="text-lg">🔄</span>}
+          label="Transition"
+          active={bottomPanel === 'transitions'}
+          onClick={() => handleOpenPanel('transitions')}
+        />
+        <NavButton
           icon={<span className="text-lg">️</span>}
           label="Trim"
           active={bottomPanel === 'trim'}
@@ -224,18 +231,6 @@ export default function Editor() {
           label="Text"
           active={bottomPanel === 'text'}
           onClick={() => handleOpenPanel('text')}
-        />
-        <NavButton
-          icon={<span className="text-lg">😀</span>}
-          label="Stickers"
-          active={bottomPanel === 'stickers'}
-          onClick={() => handleOpenPanel('stickers')}
-        />
-        <NavButton
-          icon={<span className="text-lg">🎵</span>}
-          label="Audio"
-          active={bottomPanel === 'audio'}
-          onClick={() => handleOpenPanel('audio')}
         />
         <NavButton
           icon={<span className="text-lg">✨</span>}

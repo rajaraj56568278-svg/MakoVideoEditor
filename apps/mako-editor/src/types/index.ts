@@ -52,8 +52,23 @@ export interface TextConfig {
   italic: boolean;
 }
 
+export type TransitionType =
+  | 'none'
+  | 'fade'
+  | 'flash'
+  | 'zoom-in'
+  | 'zoom-out'
+  | 'swipe-left'
+  | 'swipe-right'
+  | 'swipe-up'
+  | 'swipe-down'
+  | 'spin'
+  | 'glitch'
+  | 'blur'
+  | 'cross-dissolve';
+
 export interface Transition {
-  type: 'none' | 'fade' | 'dissolve' | 'slide-left' | 'slide-right' | 'slide-up' | 'wipe' | 'zoom';
+  type: TransitionType;
   duration: number; // seconds
 }
 

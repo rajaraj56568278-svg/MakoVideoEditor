@@ -25,6 +25,38 @@ export default function VideoPreview() {
     c => (c.type === 'sticker' || c.type === 'overlay') && state.currentTime >= c.startTime && state.currentTime < c.startTime + c.duration
   );
 
+  // Detect if we're in a transition zone between two clips
+  const getActiveTransition = () => {
+    if (!state.isPlaying) return null;
+    const videoClips = project.clips
+      .filter(c => c.type === 'video' && c.mediaUrl)
+      .sort((a, b) => a.startTime - b.startTime);
+    
+    for (let i = 0; i < videoClips.length - 1; i++) {
+      const current = videoClips[i];
+      const next = videoClips[i + 1];
+      const boundary = current.startTime + current.duration;
+      const transDur = next.transition.duration || 0.5;
+      
+      // Check if we're in the transition zone
+      if (next.transition.type !== 'none' &&
+          state.currentTime >= boundary - transDur / 2 &&
+          state.currentTime < boundary + transDur / 2) {
+        const progress = (state.currentTime - (boundary - transDur / 2)) / transDur;
+        return {
+          type: next.transition.type,
+          progress: Math.max(0, Math.min(1, progress)),
+          duration: transDur,
+          outgoingClip: current,
+          incomingClip: next,
+        };
+      }
+    }
+    return null;
+  };
+
+  const activeTransition = getActiveTransition();
+
   // Sync video playback
   useEffect(() => {
     const video = videoRef.current;
@@ -206,6 +238,23 @@ export default function VideoPreview() {
           />
         )}
 
+        {/* Transition overlay during playback */}
+        {activeTransition && (
+          <div className="absolute inset-0 pointer-events-none z-20">
+            {/* Transition effect layer */}
+            <div
+              className="absolute inset-0"
+              style={getTransitionAnimationStyle(activeTransition.type, activeTransition.progress)}
+            />
+            {/* Transition label */}
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm">
+              <span className="text-[9px] text-white/80 font-medium capitalize">
+                {activeTransition.type.replace('-', ' ')}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* No video placeholder */}
         {!activeVideoClip && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-text-muted">
@@ -267,4 +316,71 @@ export default function VideoPreview() {
       </div>
     </div>
   );
+}
+
+// Compute inline transition style based on type and progress (0..1)
+function getTransitionAnimationStyle(
+  type: string,
+  progress: number
+): React.CSSProperties {
+  const p = Math.max(0, Math.min(1, progress));
+  switch (type) {
+    case 'fade':
+      return {
+        background: `rgba(0,0,0,${p < 0.5 ? p * 2 * 0.6 : (1 - p) * 2 * 0.6})`,
+      };
+    case 'flash':
+      return {
+        background: p < 0.3
+          ? `rgba(255,255,255,${(p / 0.3) * 0.9})`
+          : `rgba(255,255,255,${((1 - p) / 0.7) * 0.9})`,
+      };
+    case 'zoom-in':
+      return {
+        background: `rgba(0,0,0,${p < 0.5 ? p * 1.2 : (1 - p) * 1.2})`,
+      };
+    case 'zoom-out':
+      return {
+        background: `rgba(0,0,0,${p < 0.5 ? p * 1.2 : (1 - p) * 1.2})`,
+      };
+    case 'swipe-left':
+      return {
+        background: `linear-gradient(to right, transparent ${p * 100 - 10}%, rgba(0,0,0,0.3) ${p * 100}%, transparent ${p * 100 + 10}%)`,
+      };
+    case 'swipe-right':
+      return {
+        background: `linear-gradient(to left, transparent ${(1 - p) * 100 - 10}%, rgba(0,0,0,0.3) ${(1 - p) * 100}%, transparent ${(1 - p) * 100 + 10}%)`,
+      };
+    case 'swipe-up':
+      return {
+        background: `linear-gradient(to bottom, transparent ${p * 100 - 10}%, rgba(0,0,0,0.3) ${p * 100}%, transparent ${p * 100 + 10}%)`,
+      };
+    case 'swipe-down':
+      return {
+        background: `linear-gradient(to top, transparent ${(1 - p) * 100 - 10}%, rgba(0,0,0,0.3) ${(1 - p) * 100}%, transparent ${(1 - p) * 100 + 10}%)`,
+      };
+    case 'spin':
+      return {
+        background: `rgba(0,0,0,${p < 0.5 ? p * 1.5 : (1 - p) * 1.5})`,
+      };
+    case 'glitch': {
+      const offset = Math.sin(p * 20) * 3;
+      return {
+        background: `rgba(0,0,0,${p < 0.5 ? p * 0.8 : (1 - p) * 0.8})`,
+        transform: `translateX(${offset}px)`,
+        mixBlendMode: 'overlay' as const,
+      };
+    }
+    case 'blur':
+      return {
+        background: `rgba(0,0,0,${p < 0.5 ? p * 0.8 : (1 - p) * 0.8})`,
+        backdropFilter: `blur(${(p < 0.5 ? p * 2 : (1 - p) * 2) * 10}px)`,
+      };
+    case 'cross-dissolve':
+      return {
+        background: `rgba(0,0,0,${Math.sin(p * Math.PI) * 0.4})`,
+      };
+    default:
+      return {};
+  }
 }
