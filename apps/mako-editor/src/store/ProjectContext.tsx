@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react';
-import type { Project, Clip, Track, EditorState, BottomPanel, ToolType, Effects, TextConfig, AiHdSettings } from '../types';
-import { defaultEffects, defaultTransition, defaultAiHdSettings } from '../types';
+import type { Project, Clip, Track, EditorState, BottomPanel, ToolType, Effects, TextConfig, AiHdSettings, BeautySettings, PortraitSettings, BgRemovalSettings, CaptionSettings, AvatarConfig } from '../types';
+import { defaultEffects, defaultTransition, defaultAiHdSettings, defaultBeautySettings, defaultPortraitSettings, defaultBgRemovalSettings, defaultCaptionSettings } from '../types';
 
 // ─── Actions ───
 type Action =
@@ -21,6 +21,9 @@ type Action =
   | { type: 'SET_BOTTOM_PANEL'; panel: BottomPanel }
   | { type: 'SET_EXPORT_MODAL'; show: boolean }
   | { type: 'SET_AI_HD'; settings: Partial<AiHdSettings> }
+  | { type: 'SET_CAPTIONS'; settings: Partial<CaptionSettings> }
+  | { type: 'ADD_AVATAR'; avatar: AvatarConfig }
+  | { type: 'REMOVE_AVATAR'; avatarId: string }
   | { type: 'ADD_TRACK'; track: Track }
   | { type: 'TOGGLE_TRACK_MUTE'; trackId: string }
   | { type: 'TOGGLE_TRACK_LOCK'; trackId: string }
@@ -60,6 +63,8 @@ const initialState: EditorState = {
   bottomPanel: 'none',
   showExportModal: false,
   aiHd: { ...defaultAiHdSettings },
+  captions: { ...defaultCaptionSettings },
+  avatars: [],
   history: [],
   historyIndex: -1,
 };
@@ -235,6 +240,15 @@ function reducer(state: EditorState, action: Action): EditorState {
     case 'SET_AI_HD':
       return { ...state, aiHd: { ...state.aiHd, ...action.settings } };
 
+    case 'SET_CAPTIONS':
+      return { ...state, captions: { ...state.captions, ...action.settings } };
+
+    case 'ADD_AVATAR':
+      return { ...state, avatars: [...state.avatars, action.avatar] };
+
+    case 'REMOVE_AVATAR':
+      return { ...state, avatars: state.avatars.filter(a => a.id !== action.avatarId) };
+
     case 'ADD_TRACK': {
       if (!state.project) return state;
       const s = pushHistory(state);
@@ -360,6 +374,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       activeFilter: clipData.activeFilter ?? 'original',
       filterIntensity: clipData.filterIntensity ?? 100,
       faceSmooth: clipData.faceSmooth ?? { enabled: false, smoothness: 30, skinDetail: 50 },
+      beauty: clipData.beauty ?? { ...defaultBeautySettings },
+      portrait: clipData.portrait ?? { ...defaultPortraitSettings },
+      bgRemovalSettings: clipData.bgRemovalSettings ?? { ...defaultBgRemovalSettings },
     };
     dispatch({ type: 'ADD_CLIP', clip });
   }, [state.currentTime]);

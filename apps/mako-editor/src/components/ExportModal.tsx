@@ -1,8 +1,10 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useProject } from '../store/ProjectContext';
-import { getEffectFilter } from '../utils/mediaUtils';
-import { applyAiHdToCanvas, getAiHdExportResolution, getAiHdDescription } from '../utils/aiEnhance';
-import { applyFaceSmoothSync } from '../utils/faceSmooth';
+import { getEffectFilter, getFilterPresetCss } from '../utils/mediaUtils';
+import { applyAiHdToCanvas, getAiHdExportResolution, getAiHdDescription, getAiHdPreviewFilter } from '../utils/aiEnhance';
+import { applyFaceSmoothSync, getFaceSmoothPreviewFilter } from '../utils/faceSmooth';
+import { getBeautyPreviewFilter } from '../utils/beautyEffects';
+import { getPortraitPreviewFilter } from '../utils/portraitEffects';
 
 type ExportResolution = '720p' | '1080p' | '4K';
 type ExportStatus = 'idle' | 'preparing' | 'recording' | 'processing' | 'done' | 'error';
@@ -138,10 +140,6 @@ export default function ExportModal() {
 
       // Start audio sources
       const audioStartTimes: number[] = [];
-      for (const clip of audioClips) {
-        const source = audioSources.find((_, i) => audioClips[i] === clip);
-        // Actually start each audio source at the right time
-      }
       // Re-create and start audio sources properly
       const activeAudioSources: { source: AudioBufferSourceNode; startTime: number }[] = [];
       for (const clip of audioClips) {
@@ -209,7 +207,20 @@ export default function ExportModal() {
 
               // Apply effects
               ctx.save();
-              ctx.filter = getEffectFilter(clip.effects);
+              const filterParts: string[] = [];
+              const ef = getEffectFilter(clip.effects);
+              if (ef !== 'none') filterParts.push(ef);
+              const pf = getFilterPresetCss(clip.activeFilter ?? 'original', clip.filterIntensity ?? 100);
+              if (pf !== 'none') filterParts.push(pf);
+              const aiHdF = getAiHdPreviewFilter(state.aiHd);
+              if (aiHdF) filterParts.push(aiHdF);
+              const fsF = getFaceSmoothPreviewFilter(clip.faceSmooth ?? { enabled: false, smoothness: 0, skinDetail: 0 });
+              if (fsF) filterParts.push(fsF);
+              const beautyF = getBeautyPreviewFilter(clip.beauty ?? { enabled: false, skinSmooth: 0, brightness: 50, contrast: 50, sharpness: 0, skinTone: 50, faceLight: 0 });
+              if (beautyF) filterParts.push(beautyF);
+              const portraitF = getPortraitPreviewFilter(clip.portrait ?? { enabled: false, faceLight: 0, smooth: 0, detail: 0, bgBlur: 0, focus: 0 });
+              if (portraitF) filterParts.push(portraitF);
+              ctx.filter = filterParts.length > 0 ? filterParts.join(' ') : 'none';
               ctx.globalAlpha = clip.opacity;
 
               // Transform
@@ -262,6 +273,63 @@ export default function ExportModal() {
             const x = (clip.position.x / 100) * canvas.width;
             const y = (clip.position.y / 100) * canvas.height;
             ctx.fillText(clip.stickerUrl, x, y);
+            ctx.restore();
+          }
+        }
+
+        // Draw caption overlays
+        if (state.captions.enabled) {
+          for (const seg of state.captions.segments) {
+            if (currentTime >= seg.startTime && currentTime < seg.endTime) {
+              const cs = state.captions.style;
+              const scale = canvas.width / 1920;
+              ctx.save();
+              ctx.font = `${cs.bold ? 'bold ' : ''}${cs.fontSize * scale}px ${cs.fontFamily}`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              const posTop = cs.position === 'top' ? 0.08 : cs.position === 'center' ? 0.45 : 0.82;
+              const x = canvas.width / 2;
+              const y = canvas.height * posTop;
+              const metrics = ctx.measureText(seg.text);
+              // Background
+              if (cs.backgroundOpacity > 0) {
+                ctx.fillStyle = cs.backgroundColor;
+                ctx.globalAlpha = cs.backgroundOpacity;
+                const pad = 8 * scale;
+                ctx.fillRect(x - metrics.width / 2 - pad, y - cs.fontSize * scale / 2 - pad, metrics.width + pad * 2, cs.fontSize * scale + pad * 2);
+                ctx.globalAlpha = 1;
+              }
+              ctx.fillStyle = cs.color;
+              ctx.fillText(seg.text, x, y);
+              ctx.restore();
+            }
+          }
+        }
+
+        // Draw avatar overlays
+        for (const av of state.avatars) {
+          if (currentTime >= av.startTime && currentTime < av.startTime + av.duration) {
+            const emojiMap: Record<string, string> = { 'cartoon-boy': '👦', 'cartoon-girl': '👧', 'cat': '🐱', 'dog': '🐶', 'robot': '🤖', 'alien': '👽', 'ninja': '🥷', 'pirate': '🏴‍☠️', 'wizard': '🧙', 'superhero': '🦸' };
+            const emoji = emojiMap[av.style] || '🎭';
+            ctx.save();
+            const x = (av.position.x / 100) * canvas.width;
+            const y = (av.position.y / 100) * canvas.height;
+            ctx.translate(x, y);
+            ctx.rotate((av.rotation * Math.PI) / 180);
+            ctx.font = `${64 * av.scale * (canvas.width / 1920)}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, 0, 0);
+            if (av.text) {
+              const s = canvas.width / 1920;
+              ctx.font = `bold ${14 * av.scale * s}px Inter, sans-serif`;
+              const tw = ctx.measureText(av.text).width;
+              ctx.fillStyle = 'rgba(255,255,255,0.9)';
+              ctx.fillRect(-tw / 2 - 8, -64 * av.scale * s * 0.5 - 24 * s, tw + 16, 24 * s);
+              ctx.fillStyle = '#1a1a1a';
+              ctx.textAlign = 'center';
+              ctx.fillText(av.text, 0, -64 * av.scale * s * 0.5 - 12 * s);
+            }
             ctx.restore();
           }
         }

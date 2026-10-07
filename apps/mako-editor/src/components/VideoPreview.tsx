@@ -3,6 +3,8 @@ import { useProject } from '../store/ProjectContext';
 import { getEffectFilter, getFilterPresetCss } from '../utils/mediaUtils';
 import { getAiHdPreviewFilter } from '../utils/aiEnhance';
 import { getFaceSmoothPreviewFilter } from '../utils/faceSmooth';
+import { getBeautyPreviewFilter } from '../utils/beautyEffects';
+import { getPortraitPreviewFilter } from '../utils/portraitEffects';
 import { formatTime } from '../utils/timeUtils';
 
 export default function VideoPreview() {
@@ -132,11 +134,15 @@ export default function VideoPreview() {
     const presetFilter = getFilterPresetCss(activeVideoClip.activeFilter ?? 'original', activeVideoClip.filterIntensity ?? 100);
     const aiHdFilter = getAiHdPreviewFilter(state.aiHd);
     const faceSmoothFilter = getFaceSmoothPreviewFilter(activeVideoClip.faceSmooth ?? { enabled: false, smoothness: 0, skinDetail: 0 });
+    const beautyFilter = getBeautyPreviewFilter(activeVideoClip.beauty ?? { enabled: false, skinSmooth: 0, brightness: 50, contrast: 50, sharpness: 0, skinTone: 50, faceLight: 0 });
+    const portraitFilter = getPortraitPreviewFilter(activeVideoClip.portrait ?? { enabled: false, faceLight: 0, smooth: 0, detail: 0, bgBlur: 0, focus: 0 });
     const filterParts: string[] = [];
     if (effectsFilter !== 'none') filterParts.push(effectsFilter);
     if (presetFilter !== 'none') filterParts.push(presetFilter);
     if (aiHdFilter) filterParts.push(aiHdFilter);
     if (faceSmoothFilter) filterParts.push(faceSmoothFilter);
+    if (beautyFilter) filterParts.push(beautyFilter);
+    if (portraitFilter) filterParts.push(portraitFilter);
     filterStr = filterParts.length > 0 ? filterParts.join(' ') : 'none';
   }
   const clipOpacity = activeVideoClip?.opacity ?? 1;
@@ -232,6 +238,54 @@ export default function VideoPreview() {
             {clip.stickerUrl}
           </div>
         ))}
+
+        {/* Caption overlays */}
+        {state.captions.enabled && state.captions.segments.map(seg => {
+          if (state.currentTime < seg.startTime || state.currentTime > seg.endTime) return null;
+          const cs = state.captions.style;
+          const posTop = cs.position === 'top' ? '8%' : cs.position === 'center' ? '45%' : '82%';
+          const progress = (state.currentTime - seg.startTime) / (seg.endTime - seg.startTime);
+          let animStyle: React.CSSProperties = {};
+          if (cs.animation === 'fade') {
+            animStyle.opacity = progress < 0.1 ? progress * 10 : progress > 0.9 ? (1 - progress) * 10 : 1;
+          } else if (cs.animation === 'bounce') {
+            animStyle.transform = `translateY(${Math.sin(progress * Math.PI * 4) * 4}px)`;
+          }
+          return (
+            <div key={seg.id} className="absolute left-1/2 -translate-x-1/2 px-3 py-1.5 pointer-events-none z-30"
+              style={{
+                top: posTop,
+                fontFamily: cs.fontFamily,
+                fontSize: `${cs.fontSize}px`,
+                color: cs.color,
+                backgroundColor: cs.backgroundColor + Math.round(cs.backgroundOpacity * 255).toString(16).padStart(2, '0'),
+                fontWeight: cs.bold ? 'bold' : 'normal',
+                borderRadius: '6px',
+                ...animStyle,
+              }}>
+              {seg.text}
+            </div>
+          );
+        })}
+
+        {/* Avatar overlays */}
+        {state.avatars.map(av => {
+          if (state.currentTime < av.startTime || state.currentTime > av.startTime + av.duration) return null;
+          const emoji = ({ 'cartoon-boy': '👦', 'cartoon-girl': '👧', 'cat': '🐱', 'dog': '🐶', 'robot': '🤖', 'alien': '👽', 'ninja': '🥷', 'pirate': '🏴‍☠️', 'wizard': '🧙', 'superhero': '🦸' } as any)[av.style] || '🎭';
+          return (
+            <div key={av.id} className="absolute pointer-events-none z-25" style={{ left: `${av.position.x}%`, top: `${av.position.y}%`, transform: `translate(-50%, -50%) scale(${av.scale}) rotate(${av.rotation}deg)` }}>
+              <div className="text-center">
+                <span style={{ fontSize: `${64 * av.scale}px` }}>{emoji}</span>
+                {av.text && (
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-white/90 text-xs font-bold text-gray-900 whitespace-nowrap shadow-md">
+                    {av.text}
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white/90 rotate-45" />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
 
         {/* Vignette overlay */}
         {activeVideoClip && activeVideoClip.effects.vignette > 0 && (

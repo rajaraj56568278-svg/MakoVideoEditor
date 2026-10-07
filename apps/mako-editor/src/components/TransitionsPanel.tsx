@@ -271,7 +271,6 @@ export default function TransitionsPanel({ onClose }: TransitionsPanelProps) {
                     background: isActive
                       ? `linear-gradient(135deg, ${t.color}33, ${t.color}11)`
                       : 'rgba(26, 26, 38, 0.8)',
-                    ringColor: isActive ? t.color : undefined,
                     borderColor: isActive ? t.color : 'transparent',
                     boxShadow: isActive ? `0 4px 12px ${t.color}22` : undefined,
                     ...(isActive ? { border: `1.5px solid ${t.color}88` } : { border: '1.5px solid transparent' }),

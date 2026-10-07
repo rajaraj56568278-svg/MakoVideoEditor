@@ -10,6 +10,7 @@ const QUALITY_OPTIONS: { value: AiHdQuality; label: string; desc: string; badge?
   { value: 'auto', label: 'Auto', desc: 'Match source resolution' },
   { value: '720p', label: 'HD 720p', desc: '1280 × 720', badge: 'Fast' },
   { value: '1080p', label: 'Full HD 1080p', desc: '1920 × 1080', badge: 'Recommended' },
+  { value: '2K', label: '2K QHD', desc: '2560 × 1440', badge: 'High' },
   { value: '4K', label: '4K Ultra HD', desc: '3840 × 2160', badge: 'Best' },
 ];
 
@@ -376,6 +377,40 @@ export default function AiHdPanel({ onClose }: AiHdPanelProps) {
             </div>
           </div>
         </div>
+
+        {/* Separate Enhancement Controls */}
+        {aiHd.enabled && (
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-text-secondary">Fine-tune</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-text-secondary">Detail</span>
+                <span className="text-xs font-mono text-violet-400">{aiHd.detail}%</span>
+              </div>
+              <input type="range" min="0" max="100" step="1" value={aiHd.detail}
+                onChange={e => dispatch({ type: 'SET_AI_HD', settings: { detail: Number(e.target.value) } })}
+                className="w-full accent-violet-500" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-text-secondary">Sharpness</span>
+                <span className="text-xs font-mono text-violet-400">{aiHd.sharpness}%</span>
+              </div>
+              <input type="range" min="0" max="100" step="1" value={aiHd.sharpness}
+                onChange={e => dispatch({ type: 'SET_AI_HD', settings: { sharpness: Number(e.target.value) } })}
+                className="w-full accent-violet-500" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-text-secondary">Noise Reduction</span>
+                <span className="text-xs font-mono text-violet-400">{aiHd.noiseReduction}%</span>
+              </div>
+              <input type="range" min="0" max="100" step="1" value={aiHd.noiseReduction}
+                onChange={e => dispatch({ type: 'SET_AI_HD', settings: { noiseReduction: Number(e.target.value) } })}
+                className="w-full accent-violet-500" />
+            </div>
+          </div>
+        )}
 
         {/* Enhancement Details */}
         {aiHd.enabled && (

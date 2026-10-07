@@ -355,6 +355,20 @@ export default function FaceSmoothPanel({ onClose }: FaceSmoothPanelProps) {
           </div>
         )}
 
+        {/* Reset + Disable Buttons */}
+        {faceSmooth.enabled && (
+          <div className="flex gap-2">
+            <button onClick={() => updateFaceSmooth({ smoothness: 30, skinDetail: 50 })}
+              className="flex-1 py-2 rounded-xl bg-bg-tertiary border border-border text-xs font-medium text-text-secondary hover:bg-bg-hover transition-colors">
+              Reset
+            </button>
+            <button onClick={() => updateFaceSmooth({ enabled: false })}
+              className="flex-1 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-medium text-red-400 hover:bg-red-500/20 transition-colors">
+              Disable
+            </button>
+          </div>
+        )}
+
         {/* Tips */}
         {faceSmooth.enabled && (
           <div className="p-3 rounded-xl bg-gradient-to-r from-pink-500/10 to-rose-500/10 border border-pink-500/20">

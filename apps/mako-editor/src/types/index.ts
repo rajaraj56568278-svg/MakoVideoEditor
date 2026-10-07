@@ -123,6 +123,15 @@ export interface Clip {
     smoothness: number; // 0-100, default 30
     skinDetail: number; // 0-100, default 50
   };
+
+  // Beauty settings
+  beauty: BeautySettings;
+
+  // Portrait settings
+  portrait: PortraitSettings;
+
+  // Background removal (enhanced)
+  bgRemovalSettings: BgRemovalSettings;
 }
 
 // ─── Track ───
@@ -256,12 +265,15 @@ export const FILTER_PRESETS: FilterPreset[] = [
 ];
 
 // ─── AI HD Enhancement ───
-export type AiHdQuality = 'auto' | '720p' | '1080p' | '4K';
+export type AiHdQuality = 'auto' | '720p' | '1080p' | '2K' | '4K';
 
 export interface AiHdSettings {
   enabled: boolean;
   quality: AiHdQuality;
   strength: number; // 0-100, default 50
+  detail: number; // 0-100, default 50
+  sharpness: number; // 0-100, default 50
+  noiseReduction: number; // 0-100, default 30
   showBeforeAfter: boolean;
 }
 
@@ -269,13 +281,16 @@ export const defaultAiHdSettings: AiHdSettings = {
   enabled: false,
   quality: 'auto',
   strength: 50,
+  detail: 50,
+  sharpness: 50,
+  noiseReduction: 30,
   showBeforeAfter: false,
 };
 
 // ─── Editor State ───
 export type EditorView = 'home' | 'editor';
 export type ToolType = 'select' | 'trim' | 'split' | 'text' | 'sticker' | 'audio' | 'effects' | 'transitions' | 'crop';
-export type BottomPanel = 'none' | 'tools' | 'effects' | 'text' | 'audio' | 'stickers' | 'transitions' | 'adjustments' | 'filters' | 'speed' | 'crop' | 'chroma' | 'keyframe' | 'trim' | 'aihd' | 'facesmooth';
+export type BottomPanel = 'none' | 'tools' | 'effects' | 'text' | 'audio' | 'stickers' | 'transitions' | 'adjustments' | 'filters' | 'speed' | 'crop' | 'chroma' | 'keyframe' | 'trim' | 'aihd' | 'facesmooth' | 'beauty' | 'portrait' | 'captions' | 'bgRemove' | 'avatar';
 
 export interface EditorState {
   view: EditorView;
@@ -288,6 +303,8 @@ export interface EditorState {
   bottomPanel: BottomPanel;
   showExportModal: boolean;
   aiHd: AiHdSettings;
+  captions: CaptionSettings;
+  avatars: AvatarConfig[];
   history: Project[];
   historyIndex: number;
 }
@@ -343,4 +360,155 @@ export const FONT_FAMILIES = [
   'Verdana',
   'Impact',
   'Comic Sans MS',
+];
+
+// ─── Beauty Settings ───
+export interface BeautySettings {
+  enabled: boolean;
+  skinSmooth: number;    // 0-100
+  brightness: number;    // 0-100
+  contrast: number;      // 0-100
+  sharpness: number;     // 0-100
+  skinTone: number;      // 0-100 (warmth)
+  faceLight: number;     // 0-100
+}
+
+export const defaultBeautySettings: BeautySettings = {
+  enabled: false,
+  skinSmooth: 0,
+  brightness: 50,
+  contrast: 50,
+  sharpness: 0,
+  skinTone: 50,
+  faceLight: 0,
+};
+
+// ─── Portrait Settings ───
+export interface PortraitSettings {
+  enabled: boolean;
+  faceLight: number;      // 0-100
+  smooth: number;         // 0-100
+  detail: number;         // 0-100
+  bgBlur: number;         // 0-100
+  focus: number;          // 0-100 (portrait focus / vignette)
+}
+
+export const defaultPortraitSettings: PortraitSettings = {
+  enabled: false,
+  faceLight: 0,
+  smooth: 0,
+  detail: 0,
+  bgBlur: 0,
+  focus: 0,
+};
+
+// ─── Background Removal Settings ───
+export type BgRemovalMode = 'transparent' | 'blur' | 'image' | 'video' | 'original';
+
+export interface BgRemovalSettings {
+  enabled: boolean;
+  mode: BgRemovalMode;
+  blurAmount: number;     // 0-100, for blur mode
+  customImageUrl: string | null;
+  customVideoUrl: string | null;
+  processing: boolean;
+  progress: number;       // 0-100
+}
+
+export const defaultBgRemovalSettings: BgRemovalSettings = {
+  enabled: false,
+  mode: 'transparent',
+  blurAmount: 50,
+  customImageUrl: null,
+  customVideoUrl: null,
+  processing: false,
+  progress: 0,
+};
+
+// ─── Caption Segment ───
+export interface CaptionSegment {
+  id: string;
+  text: string;
+  startTime: number;  // seconds
+  endTime: number;    // seconds
+  confidence: number; // 0-1
+}
+
+export interface CaptionStyle {
+  fontFamily: string;
+  fontSize: number;
+  color: string;
+  backgroundColor: string;
+  backgroundOpacity: number;
+  position: 'top' | 'center' | 'bottom';
+  animation: 'none' | 'fade' | 'typewriter' | 'bounce' | 'highlight';
+  bold: boolean;
+}
+
+export const defaultCaptionStyle: CaptionStyle = {
+  fontFamily: 'Inter',
+  fontSize: 24,
+  color: '#ffffff',
+  backgroundColor: '#000000',
+  backgroundOpacity: 0.6,
+  position: 'bottom',
+  animation: 'none',
+  bold: true,
+};
+
+export interface CaptionSettings {
+  enabled: boolean;
+  segments: CaptionSegment[];
+  style: CaptionStyle;
+  language: string;
+}
+
+export const defaultCaptionSettings: CaptionSettings = {
+  enabled: false,
+  segments: [],
+  style: { ...defaultCaptionStyle },
+  language: 'en-US',
+};
+
+// ─── Avatar Settings ───
+export type AvatarStyle = 'cartoon-boy' | 'cartoon-girl' | 'cat' | 'dog' | 'robot' | 'alien' | 'ninja' | 'pirate' | 'wizard' | 'superhero';
+
+export interface AvatarConfig {
+  id: string;
+  style: AvatarStyle;
+  text: string;
+  position: { x: number; y: number };
+  scale: number;
+  rotation: number;
+  startTime: number;
+  duration: number;
+}
+
+export const AVATAR_STYLES: { value: AvatarStyle; label: string; emoji: string }[] = [
+  { value: 'cartoon-boy', label: 'Boy', emoji: '👦' },
+  { value: 'cartoon-girl', label: 'Girl', emoji: '👧' },
+  { value: 'cat', label: 'Cat', emoji: '🐱' },
+  { value: 'dog', label: 'Dog', emoji: '🐶' },
+  { value: 'robot', label: 'Robot', emoji: '🤖' },
+  { value: 'alien', label: 'Alien', emoji: '👽' },
+  { value: 'ninja', label: 'Ninja', emoji: '🥷' },
+  { value: 'pirate', label: 'Pirate', emoji: '🏴‍☠️' },
+  { value: 'wizard', label: 'Wizard', emoji: '🧙' },
+  { value: 'superhero', label: 'Hero', emoji: '🦸' },
+];
+
+// ─── Caption Languages ───
+export const CAPTION_LANGUAGES = [
+  { code: 'en-US', label: 'English (US)' },
+  { code: 'en-GB', label: 'English (UK)' },
+  { code: 'es-ES', label: 'Spanish' },
+  { code: 'fr-FR', label: 'French' },
+  { code: 'de-DE', label: 'German' },
+  { code: 'it-IT', label: 'Italian' },
+  { code: 'pt-BR', label: 'Portuguese' },
+  { code: 'ja-JP', label: 'Japanese' },
+  { code: 'ko-KR', label: 'Korean' },
+  { code: 'zh-CN', label: 'Chinese' },
+  { code: 'ar-SA', label: 'Arabic' },
+  { code: 'hi-IN', label: 'Hindi' },
 ];

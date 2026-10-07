@@ -15,6 +15,11 @@ import TrimPanel from './TrimPanel';
 import FiltersPanel from './FiltersPanel';
 import AiHdPanel from './panels/AiHdPanel';
 import FaceSmoothPanel from './panels/FaceSmoothPanel';
+import BeautyPanel from './panels/BeautyPanel';
+import PortraitPanel from './panels/PortraitPanel';
+import AutoCaptionsPanel from './panels/AutoCaptionsPanel';
+import AiBackgroundPanel from './panels/AiBackgroundPanel';
+import AvatarPanel from './panels/AvatarPanel';
 import ExportModal from './ExportModal';
 import { saveProject } from '../utils/db';
 import type { BottomPanel } from '../types';
@@ -151,6 +156,11 @@ export default function Editor() {
             {bottomPanel === 'trim' && <TrimPanel onClose={handleClosePanel} />}
             {bottomPanel === 'aihd' && <AiHdPanel onClose={handleClosePanel} />}
             {bottomPanel === 'facesmooth' && <FaceSmoothPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'beauty' && <BeautyPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'portrait' && <PortraitPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'captions' && <AutoCaptionsPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'bgRemove' && <AiBackgroundPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'avatar' && <AvatarPanel onClose={handleClosePanel} />}
           </div>
         )}
 
@@ -216,6 +226,9 @@ export default function Editor() {
                   activeFilter: 'original' as const,
                   filterIntensity: 100,
                   faceSmooth: { enabled: false, smoothness: 30, skinDetail: 50 },
+                  beauty: { enabled: false, skinSmooth: 0, brightness: 50, contrast: 50, sharpness: 0, skinTone: 50, faceLight: 0 },
+                  portrait: { enabled: false, faceLight: 0, smooth: 0, detail: 0, bgBlur: 0, focus: 0 },
+                  bgRemovalSettings: { enabled: false, mode: 'transparent' as const, blurAmount: 50, customImageUrl: null, customVideoUrl: null, processing: false, progress: 0 },
                 };
                 dispatch({ type: 'ADD_CLIP', clip });
               }

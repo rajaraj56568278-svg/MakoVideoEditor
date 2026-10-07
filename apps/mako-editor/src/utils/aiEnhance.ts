@@ -14,9 +14,10 @@ import type { AiHdSettings, AiHdQuality } from '../types';
 
 // ─── Resolution map ───
 export const AI_HD_RESOLUTIONS: Record<AiHdQuality, { width: number; height: number; label: string } | null> = {
-  'auto': null, // use source resolution
+  'auto': null,
   '720p': { width: 1280, height: 720, label: 'HD 720p' },
   '1080p': { width: 1920, height: 1080, label: 'Full HD 1080p' },
+  '2K': { width: 2560, height: 1440, label: '2K QHD' },
   '4K': { width: 3840, height: 2160, label: '4K Ultra HD' },
 };
 
@@ -27,27 +28,29 @@ export const AI_HD_RESOLUTIONS: Record<AiHdQuality, { width: number; height: num
 export function getAiHdPreviewFilter(settings: AiHdSettings): string {
   if (!settings.enabled || settings.strength <= 0) return '';
 
-  const t = settings.strength / 100; // 0..1
+  const t = settings.strength / 100;
+  const sharpT = (settings.sharpness || 50) / 100;
+  const detailT = (settings.detail || 50) / 100;
+  const noiseT = (settings.noiseReduction || 30) / 100;
 
   const parts: string[] = [];
 
-  // Sharpening approximation: boost contrast in midtones + slight brightness lift
-  // This makes edges appear crisper without actual convolution
-  const sharpContrast = 1 + t * 0.18;
-  parts.push(`contrast(${sharpContrast.toFixed(3)})`);
+  // Sharpness: contrast boost
+  const sharpContrast = 1 + t * sharpT * 0.2;
+  if (sharpContrast > 1.01) parts.push(`contrast(${sharpContrast.toFixed(3)})`);
 
-  // Auto brightness: slight lift in shadows
+  // Auto brightness
   const autoBright = 1 + t * 0.06;
-  parts.push(`brightness(${autoBright.toFixed(3)})`);
+  if (Math.abs(autoBright - 1) > 0.005) parts.push(`brightness(${autoBright.toFixed(3)})`);
 
-  // Detail enhancement: slight saturation boost for vividness
-  const detailSat = 1 + t * 0.08;
-  parts.push(`saturate(${detailSat.toFixed(3)})`);
+  // Detail: saturation boost
+  const detailSat = 1 + detailT * t * 0.1;
+  if (detailSat > 1.005) parts.push(`saturate(${detailSat.toFixed(3)})`);
 
-  // Clarity: a tiny bit of extra contrast curve
-  if (t > 0.3) {
-    const clarity = 1 + (t - 0.3) * 0.1;
-    parts.push(`contrast(${clarity.toFixed(3)})`);
+  // Noise reduction: very subtle blur
+  if (noiseT > 0.2 && t > 0.2) {
+    const nr = noiseT * t * 0.3;
+    parts.push(`blur(${nr.toFixed(2)}px)`);
   }
 
   return parts.join(' ');

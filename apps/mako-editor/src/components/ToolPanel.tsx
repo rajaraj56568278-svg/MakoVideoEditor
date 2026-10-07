@@ -223,9 +223,9 @@ function SelectedClipTools({ selectedClip, onOpenPanel }: { selectedClip: any; o
       {/* Row 3: Beauty */}
       <div className="grid grid-cols-4 gap-2">
         <ToolButton icon="👤" label="Face Smooth" onClick={() => onOpenPanel('facesmooth')} beauty />
-        <ToolButton icon="💄" label="Beauty" onClick={() => {}} comingSoon />
-        <ToolButton icon="🎭" label="Avatar" onClick={() => {}} comingSoon />
-        <ToolButton icon="📸" label="Portrait" onClick={() => {}} comingSoon />
+        <ToolButton icon="💄" label="Beauty" onClick={() => onOpenPanel('beauty')} beauty />
+        <ToolButton icon="🎭" label="Avatar" onClick={() => onOpenPanel('avatar')} />
+        <ToolButton icon="📸" label="Portrait" onClick={() => onOpenPanel('portrait')} beauty />
       </div>
 
       {/* Volume slider for video/audio clips */}
@@ -285,19 +285,19 @@ function NoSelectionTools({ onOpenPanel }: { onOpenPanel: (p: BottomPanel) => vo
         <ToolButton icon="" label="Crop" onClick={() => onOpenPanel('crop')} />
         <ToolButton icon="🔄" label="Speed" onClick={() => onOpenPanel('speed')} />
         <ToolButton icon="" label="Chroma" onClick={() => onOpenPanel('chroma')} />
-        <ToolButton icon="" label="AI Remove" onClick={() => {}} comingSoon />
+        <ToolButton icon="🧹" label="AI Remove" onClick={() => onOpenPanel('bgRemove')} highlight />
       </div>
       <div className="grid grid-cols-4 gap-2">
-        <ToolButton icon="" label="Captions" onClick={() => {}} comingSoon />
+        <ToolButton icon="📝" label="Captions" onClick={() => onOpenPanel('captions')} />
         <ToolButton icon="📊" label="Keyframe" onClick={() => onOpenPanel('keyframe')} />
         <ToolButton icon="🎬" label="Filters" onClick={() => onOpenPanel('filters')} />
         <ToolButton icon="" label="AI HD" onClick={() => onOpenPanel('aihd')} highlight />
       </div>
       <div className="grid grid-cols-4 gap-2">
         <ToolButton icon="👤" label="Face Smooth" onClick={() => onOpenPanel('facesmooth')} beauty />
-        <ToolButton icon="💄" label="Beauty" onClick={() => {}} comingSoon />
-        <ToolButton icon="🎭" label="Avatar" onClick={() => {}} comingSoon />
-        <ToolButton icon="📸" label="Portrait" onClick={() => {}} comingSoon />
+        <ToolButton icon="💄" label="Beauty" onClick={() => onOpenPanel('beauty')} beauty />
+        <ToolButton icon="🎭" label="Avatar" onClick={() => onOpenPanel('avatar')} />
+        <ToolButton icon="📸" label="Portrait" onClick={() => onOpenPanel('portrait')} beauty />
       </div>
     </div>
   );
