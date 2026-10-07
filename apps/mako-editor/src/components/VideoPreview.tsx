@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useProject } from '../store/ProjectContext';
 import { getEffectFilter, getFilterPresetCss } from '../utils/mediaUtils';
 import { getAiHdPreviewFilter } from '../utils/aiEnhance';
+import { getFaceSmoothPreviewFilter } from '../utils/faceSmooth';
 import { formatTime } from '../utils/timeUtils';
 
 export default function VideoPreview() {
@@ -124,16 +125,18 @@ export default function VideoPreview() {
     dispatch({ type: 'SET_TIME', time: newTime });
   }, [state.currentTime, project.duration, dispatch]);
 
-  // Build CSS filter string combining effects + named filter preset + AI HD
+  // Build CSS filter string combining effects + named filter preset + AI HD + Face Smooth
   let filterStr = 'none';
   if (activeVideoClip) {
     const effectsFilter = getEffectFilter(activeVideoClip.effects);
     const presetFilter = getFilterPresetCss(activeVideoClip.activeFilter ?? 'original', activeVideoClip.filterIntensity ?? 100);
     const aiHdFilter = getAiHdPreviewFilter(state.aiHd);
+    const faceSmoothFilter = getFaceSmoothPreviewFilter(activeVideoClip.faceSmooth ?? { enabled: false, smoothness: 0, skinDetail: 0 });
     const filterParts: string[] = [];
     if (effectsFilter !== 'none') filterParts.push(effectsFilter);
     if (presetFilter !== 'none') filterParts.push(presetFilter);
     if (aiHdFilter) filterParts.push(aiHdFilter);
+    if (faceSmoothFilter) filterParts.push(faceSmoothFilter);
     filterStr = filterParts.length > 0 ? filterParts.join(' ') : 'none';
   }
   const clipOpacity = activeVideoClip?.opacity ?? 1;

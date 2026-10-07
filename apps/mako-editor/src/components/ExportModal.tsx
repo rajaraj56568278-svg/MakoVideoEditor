@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useProject } from '../store/ProjectContext';
 import { getEffectFilter } from '../utils/mediaUtils';
 import { applyAiHdToCanvas, getAiHdExportResolution, getAiHdDescription } from '../utils/aiEnhance';
+import { applyFaceSmoothSync } from '../utils/faceSmooth';
 
 type ExportResolution = '720p' | '1080p' | '4K';
 type ExportStatus = 'idle' | 'preparing' | 'recording' | 'processing' | 'done' | 'error';
@@ -262,6 +263,18 @@ export default function ExportModal() {
             const y = (clip.position.y / 100) * canvas.height;
             ctx.fillText(clip.stickerUrl, x, y);
             ctx.restore();
+          }
+        }
+
+        // Apply face smoothing to the frame if enabled for this clip
+        for (const clip of videoClips) {
+          if (currentTime >= clip.startTime && currentTime < clip.startTime + clip.duration) {
+            if (clip.faceSmooth?.enabled && clip.faceSmooth.smoothness > 0) {
+              const video = videoElements.get(clip.mediaUrl!);
+              if (video) {
+                applyFaceSmoothSync(ctx, canvas.width, canvas.height, clip.faceSmooth, video);
+              }
+            }
           }
         }
 

@@ -14,6 +14,7 @@ import KeyframePanel from './KeyframePanel';
 import TrimPanel from './TrimPanel';
 import FiltersPanel from './FiltersPanel';
 import AiHdPanel from './panels/AiHdPanel';
+import FaceSmoothPanel from './panels/FaceSmoothPanel';
 import ExportModal from './ExportModal';
 import { saveProject } from '../utils/db';
 import type { BottomPanel } from '../types';
@@ -149,6 +150,7 @@ export default function Editor() {
             {bottomPanel === 'keyframe' && <KeyframePanel onClose={handleClosePanel} />}
             {bottomPanel === 'trim' && <TrimPanel onClose={handleClosePanel} />}
             {bottomPanel === 'aihd' && <AiHdPanel onClose={handleClosePanel} />}
+            {bottomPanel === 'facesmooth' && <FaceSmoothPanel onClose={handleClosePanel} />}
           </div>
         )}
 
@@ -213,6 +215,7 @@ export default function Editor() {
                   bgRemoval: false,
                   activeFilter: 'original' as const,
                   filterIntensity: 100,
+                  faceSmooth: { enabled: false, smoothness: 30, skinDetail: 50 },
                 };
                 dispatch({ type: 'ADD_CLIP', clip });
               }

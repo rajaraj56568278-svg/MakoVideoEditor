@@ -220,6 +220,14 @@ function SelectedClipTools({ selectedClip, onOpenPanel }: { selectedClip: any; o
         <ToolButton icon="" label="AI HD" onClick={() => onOpenPanel('aihd')} highlight />
       </div>
 
+      {/* Row 3: Beauty */}
+      <div className="grid grid-cols-4 gap-2">
+        <ToolButton icon="👤" label="Face Smooth" onClick={() => onOpenPanel('facesmooth')} beauty />
+        <ToolButton icon="💄" label="Beauty" onClick={() => {}} comingSoon />
+        <ToolButton icon="🎭" label="Avatar" onClick={() => {}} comingSoon />
+        <ToolButton icon="📸" label="Portrait" onClick={() => {}} comingSoon />
+      </div>
+
       {/* Volume slider for video/audio clips */}
       {(selectedClip.type === 'video' || selectedClip.type === 'audio') && (
         <div className="space-y-1">
@@ -285,27 +293,38 @@ function NoSelectionTools({ onOpenPanel }: { onOpenPanel: (p: BottomPanel) => vo
         <ToolButton icon="🎬" label="Filters" onClick={() => onOpenPanel('filters')} />
         <ToolButton icon="" label="AI HD" onClick={() => onOpenPanel('aihd')} highlight />
       </div>
+      <div className="grid grid-cols-4 gap-2">
+        <ToolButton icon="👤" label="Face Smooth" onClick={() => onOpenPanel('facesmooth')} beauty />
+        <ToolButton icon="💄" label="Beauty" onClick={() => {}} comingSoon />
+        <ToolButton icon="🎭" label="Avatar" onClick={() => {}} comingSoon />
+        <ToolButton icon="📸" label="Portrait" onClick={() => {}} comingSoon />
+      </div>
     </div>
   );
 }
 
-function ToolButton({ icon, label, onClick, comingSoon, highlight }: { icon: string; label: string; onClick: () => void; comingSoon?: boolean; highlight?: boolean }) {
+function ToolButton({ icon, label, onClick, comingSoon, highlight, beauty }: { icon: string; label: string; onClick: () => void; comingSoon?: boolean; highlight?: boolean; beauty?: boolean }) {
   return (
     <button
       onClick={onClick}
       className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all relative active:scale-95 ${
         highlight
           ? 'bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-violet-500/30 hover:from-violet-500/30 hover:to-indigo-500/30'
+          : beauty
+          ? 'bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30 hover:from-pink-500/30 hover:to-rose-500/30'
           : 'bg-bg-tertiary hover:bg-bg-hover'
       }`}
     >
-      <span className={`text-lg ${highlight ? 'drop-shadow-[0_0_4px_rgba(139,92,246,0.5)]' : ''}`}>{icon || (highlight ? '🔮' : '')}</span>
-      <span className={`text-[10px] ${highlight ? 'text-violet-300 font-medium' : 'text-text-secondary'}`}>{label}</span>
+      <span className={`text-lg ${highlight ? 'drop-shadow-[0_0_4px_rgba(139,92,246,0.5)]' : beauty ? 'drop-shadow-[0_0_4px_rgba(236,72,153,0.5)]' : ''}`}>{icon || (highlight ? '🔮' : '')}</span>
+      <span className={`text-[10px] ${highlight ? 'text-violet-300 font-medium' : beauty ? 'text-pink-300 font-medium' : 'text-text-secondary'}`}>{label}</span>
       {comingSoon && (
         <span className="absolute -top-1 -right-1 text-[7px] bg-warning/20 text-warning px-1 rounded">Soon</span>
       )}
       {highlight && (
         <span className="absolute -top-1 -right-1 text-[7px] bg-violet-500 text-white px-1 rounded font-semibold">AI</span>
+      )}
+      {beauty && (
+        <span className="absolute -top-1 -right-1 text-[7px] bg-pink-500 text-white px-1 rounded font-semibold">NEW</span>
       )}
     </button>
   );

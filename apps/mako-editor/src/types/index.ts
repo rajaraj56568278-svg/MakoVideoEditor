@@ -116,6 +116,13 @@ export interface Clip {
   // Filter preset
   activeFilter: FilterType;
   filterIntensity: number; // 0-100
+
+  // Face smoothing/beauty
+  faceSmooth: {
+    enabled: boolean;
+    smoothness: number; // 0-100, default 30
+    skinDetail: number; // 0-100, default 50
+  };
 }
 
 // ─── Track ───
@@ -268,7 +275,7 @@ export const defaultAiHdSettings: AiHdSettings = {
 // ─── Editor State ───
 export type EditorView = 'home' | 'editor';
 export type ToolType = 'select' | 'trim' | 'split' | 'text' | 'sticker' | 'audio' | 'effects' | 'transitions' | 'crop';
-export type BottomPanel = 'none' | 'tools' | 'effects' | 'text' | 'audio' | 'stickers' | 'transitions' | 'adjustments' | 'filters' | 'speed' | 'crop' | 'chroma' | 'keyframe' | 'trim' | 'aihd';
+export type BottomPanel = 'none' | 'tools' | 'effects' | 'text' | 'audio' | 'stickers' | 'transitions' | 'adjustments' | 'filters' | 'speed' | 'crop' | 'chroma' | 'keyframe' | 'trim' | 'aihd' | 'facesmooth';
 
 export interface EditorState {
   view: EditorView;

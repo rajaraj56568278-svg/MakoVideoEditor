@@ -359,6 +359,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       bgRemoval: clipData.bgRemoval ?? false,
       activeFilter: clipData.activeFilter ?? 'original',
       filterIntensity: clipData.filterIntensity ?? 100,
+      faceSmooth: clipData.faceSmooth ?? { enabled: false, smoothness: 30, skinDetail: 50 },
     };
     dispatch({ type: 'ADD_CLIP', clip });
   }, [state.currentTime]);
